@@ -1,194 +1,475 @@
-# File Assignment by Team Member
+# File Assignment by Feature Module
 
-Based on `SPRINT_BACKLOG_ALLOCATION.md` and actual project structure.
+Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
+
+**Allocation Philosophy**: Each team member owns a complete feature module (vertical slice) including frontend UI, backend API, Java Swing components, and database schema. This ensures clear ownership, minimal conflicts, and complete feature responsibility.
 
 ---
 
-## **ALPHA's Files**
+## **ALPHA - User Authentication & Profile Module** 👤
 
-### **Root/Documentation**
-- `README.md` - Project setup & documentation
-- `PLANNING_INITIAL_DESIGN.md` - Shared design doc
+**Module Responsibility**: Complete user identity management from registration to profile editing
 
-### **Frontend - Authentication UI (S1-4)**
+### **Frontend Files** (Svelte)
+
+#### Authentication Pages & Components
 - `frontend/src/routes/register/+page.svelte` - Registration page route
 - `frontend/src/routes/login/+page.svelte` - Login page route
+- `frontend/src/routes/profile/+page.svelte` - Profile editing page route
 - `frontend/src/lib/pages/Register.svelte` - Registration form component
 - `frontend/src/lib/pages/Login.svelte` - Login form component
-- `frontend/src/lib/validation.js` - Username/password validation logic
-- `frontend/src/lib/store.js` - Auth state management (shared)
+- `frontend/src/lib/pages/Profile.svelte` - Profile edit component
 
-### **Backend - Comments (S1-7)**
-- `backend/src/routes/comments.js` - Comment endpoints
-- `backend/src/services/comments.js` - Comment business logic
+#### State & Utilities
+- `frontend/src/lib/store.js` - Auth state management (user session, login status)
+- `frontend/src/lib/validation.js` - Form validation (username, password, email)
 
-### **Frontend - WYSIWYG Editor (S2-3)**
+#### Layout & Styling
+- `frontend/src/routes/+layout.svelte` - App layout with auth-aware navigation
+- `frontend/src/app.css` - Global styles + responsive design
+
+**Frontend Total**: 10 files
+
+### **Backend Files** (Node.js/Express)
+
+#### Routes
+- `backend/src/routes/auth.js` - Authentication endpoints (register, login, logout)
+- `backend/src/routes/users.js` - User management endpoints (profile update, delete, avatar)
+
+#### Services
+- `backend/src/services/users.js` - User business logic (create, update, password hashing)
+- `backend/src/services/sessions.js` - Session management
+
+#### Middleware
+- `backend/src/middleware/auth.js` - Authentication middleware (protect routes)
+
+#### Utilities
+- `backend/src/util/validation.js` - Server-side validation utilities
+
+**Backend Total**: 6 files
+
+### **Java Files** (Swing)
+- `swing-admin/LoginDialog.java` - Login/logout dialog component
+  - Login form UI (username, password fields)
+  - Login/logout buttons and event handlers
+  - Session cookie management
+  - Authentication state display
+- `swing-admin/HTTPClient.java` - HTTP client utility
+  - GET/POST/DELETE request methods
+  - Cookie/session header management
+  - JSON request/response handling
+  - Error handling and status codes
+
+**Java Total**: 2 files
+
+### **Database Schema**
+- `db/db-init.sql` (partial):
+  - `users` table definition
+  - `sessions` table definition
+
+### **Documentation**
+- `README.md` - Auth setup section
+
+**Module Total**: ~19 source files (10 frontend + 6 backend + 2 Java + 1 docs) + database tables
+
+**Estimated Effort**: 52-72 hours
+
+---
+
+## **BELTA - Articles & Content Module** 📝
+
+**Module Responsibility**: Complete article lifecycle including creation, viewing, editing, search, and images
+
+### **Frontend Files** (Svelte)
+
+#### Article Pages & Components
+- `frontend/src/routes/+page.svelte` - Home page route (article list)
+- `frontend/src/routes/article/[id]/+page.svelte` - Article detail page route
 - `frontend/src/routes/editor/+page.svelte` - New article editor route
 - `frontend/src/routes/editor/[id]/+page.svelte` - Edit article route
-- `frontend/src/lib/pages/ArticleEditor.svelte` - Editor component
-- `frontend/src/lib/components/TinyEditor.svelte` - TinyMCE wrapper
+- `frontend/src/lib/pages/Home.svelte` - Article list component with search/sort
+- `frontend/src/lib/pages/ArticleDetail.svelte` - Article detail view
+- `frontend/src/lib/pages/ArticleEditor.svelte` - Article editor wrapper
+- `frontend/src/lib/components/ArticleCard.svelte` - Article card component
+- `frontend/src/lib/components/TinyEditor.svelte` - WYSIWYG editor (TinyMCE wrapper)
 
-### **Frontend - Search/Sort (S2-5)**
-- `frontend/src/lib/pages/Home.svelte` - Home with search/sort controls
+**Frontend Total**: 9 files
 
-### **Frontend - Responsive UI & Polish (S2-13)**
-- `frontend/src/app.css` - Global styles & responsive design
-- `frontend/src/routes/+layout.svelte` - Layout with loading states
+### **Backend Files** (Node.js/Express)
 
-### **Backend - Comment Delete Rules (S2-8)**
-- `backend/src/routes/comments.js` - DELETE endpoint with permissions (shared with comments work)
+#### Routes
+- `backend/src/routes/articles.js` - Article CRUD endpoints + search/sort
 
-### **Java - Swing Admin (S1-10, S2-10)**
-- `swing-admin/AdminApp.java` - Main Swing application
-  - Login/logout functionality
-  - JTable for user list
-  - Avatar panel with async loading
-  - HTTP helper utilities
+#### Services
+- `backend/src/services/articles.js` - Article business logic
+- `backend/src/services/images.js` - Image upload & storage service
 
-**Total: ~14 primary files**
-
----
-
-## **BELTA's Files**
-
-### **Database (S1-2)**
-- `db/db-init.sql` - Complete schema & seed data
-
-### **Backend - Database Setup**
-- `backend/src/db/db.js` - Database connection
+#### Database
+- `backend/src/db/db.js` - Database connection setup
 - `backend/src/db/init.js` - Database initialization
 
-### **Backend - Articles (S1-5)**
-- `backend/src/routes/articles.js` - Article CRUD endpoints
-- `backend/src/services/articles.js` - Article business logic
+#### Utilities
+- `backend/src/util/uploads.js` - File upload utilities (multer config, storage)
 
-### **Frontend - Comments UI (S1-8)**
-- `frontend/src/lib/components/CommentItem.svelte` - Individual comment display
+**Backend Total**: 6 files
 
-### **Frontend/Backend - Profile System (S2-1)**
-- `frontend/src/routes/profile/+page.svelte` - Profile page route
-- `frontend/src/lib/pages/Profile.svelte` - Profile edit component
-- `backend/src/routes/users.js` - PATCH/DELETE user endpoints (shared)
-- `backend/src/services/users.js` - User update/delete logic (shared)
+### **Java Files** (Swing)
+- `swing-admin/UserTableModel.java` - Custom TableModel (MVC pattern)
+  - Implements AbstractTableModel
+  - Manages user data list
+  - Column definitions (username, articles, comments, created)
+  - Observers/listeners for data updates
+  - Add/remove/update user rows
+- `swing-admin/UserTablePanel.java` - User table display panel
+  - JTable component with custom model
+  - Column sizing and formatting
+  - Row selection handling (ListSelectionListener)
+  - Scroll pane integration
+  - Selection event firing to parent
 
-### **Backend - Article Images (S2-4)**
-- `backend/src/services/images.js` - Image upload & storage
-- `backend/src/util/uploads.js` - File upload utilities
+**Java Total**: 2 files
 
-### **Frontend - "My Articles" View (S2-6)**
-- `frontend/src/lib/pages/Home.svelte` - Filter for "my articles" (shared with alpha)
+### **Database Schema**
+- `db/db-init.sql`:
+  - Complete schema structure (all tables)
+  - `articles` table definition
+  - `images` table definition
+  - Foreign keys & cascade rules
+  - Indexes for search/sort
 
-### **Frontend - Comment Delete UI (S2-8)**
-- `frontend/src/lib/components/CommentItem.svelte` - Delete button UI (shared)
+### **Configuration**
+- `frontend/package.json` - Frontend dependencies (including TinyMCE)
+- `frontend/svelte.config.js` - SvelteKit configuration
+- `frontend/vite.config.js` - Vite build configuration
+- `backend/package.json` - Backend dependencies
 
-### **Java - Swing Delete (S2-11)**
-- `swing-admin/AdminApp.java` - Delete user functionality (shared with alpha)
+### **Documentation**
+- `README.md` - Final complete documentation:
+  - Setup instructions
+  - Demo users
+  - API documentation
+  - Feature list
+  - Deployment guide
 
-### **Documentation (S2-15)**
-- `README.md` - Final documentation updates
+**Module Total**: ~22 source files (9 frontend + 6 backend + 2 Java + 1 database + 4 config/docs)
 
-**Total: ~14 primary files**
-
----
-
-## **GAMMA's Files**
-
-### **Backend - Authentication System (S1-3)**
-- `backend/src/routes/auth.js` - Login/logout/register endpoints
-- `backend/src/routes/users.js` - User registration & exists check
-- `backend/src/services/users.js` - User creation & password hashing
-- `backend/src/services/sessions.js` - Session management
-- `backend/src/middleware/auth.js` - Authentication middleware
-
-### **Frontend - Articles Display (S1-6)**
-- `frontend/src/routes/+page.svelte` - Home page route
-- `frontend/src/routes/article/[id]/+page.svelte` - Article detail route
-- `frontend/src/lib/pages/Home.svelte` - Article list component (shared)
-- `frontend/src/lib/pages/ArticleDetail.svelte` - Article detail component
-- `frontend/src/lib/components/ArticleCard.svelte` - Article card component
-- `frontend/src/lib/api.js` - API helper functions
-
-### **Backend - Admin API (S1-9)**
-- `backend/src/routes/admin.js` - Admin endpoints (GET users, article counts)
-
-### **Backend - Main Application (S1-9)**
-- `backend/src/app.js` - Express app setup & middleware
-- `backend/src/util/http.js` - HTTP utilities
-- `backend/src/util/validation.js` - Backend validation
-
-### **Frontend/Backend - Avatars (S2-2)**
-- `backend/src/routes/users.js` - Avatar upload endpoint (shared)
-- Avatar display components (integrated into existing components)
-
-### **Frontend - Nested Comments (S2-7)**
-- `frontend/src/lib/components/CommentItem.svelte` - Recursive comment component (shared)
-- `backend/src/services/comments.js` - Nested comment queries (shared)
-
-### **Backend - Admin Delete User (S2-9)**
-- `backend/src/routes/admin.js` - DELETE user endpoint (shared)
-
-### **Java - Swing Patterns (S2-12)**
-- `swing-admin/AdminApp.java` - MVC patterns documentation (shared)
-
-### **Database - Seed Data (S2-16)**
-- `db/db-init.sql` - Seed data section (shared with belta)
-
-**Total: ~18 primary files**
+**Estimated Effort**: 54-80 hours
 
 ---
 
-## **Shared Configuration Files** (All team members)
+## **GAMMA - Comments & Administration Module** 💬🔧
 
-### **Frontend Config**
-- `frontend/package.json`
-- `frontend/svelte.config.js`
-- `frontend/vite.config.js`
-- `frontend/src/routes/+layout.js`
+**Module Responsibility**: Complete commenting system (flat & nested) + admin panel for user management
 
-### **Backend Config**
-- `backend/package.json`
-- `backend/.nvmrc`
+### **Frontend Files** (Svelte)
+
+#### Comment Components
+- `frontend/src/lib/components/CommentItem.svelte` - Comment display (recursive for nesting)
+
+#### API Utilities
+- `frontend/src/lib/api.js` - API helper functions (fetch wrappers, error handling)
+
+**Frontend Total**: 2 files
+
+### **Backend Files** (Node.js/Express)
+
+#### Routes
+- `backend/src/routes/comments.js` - Comment CRUD endpoints (including nested)
+- `backend/src/routes/admin.js` - Admin API endpoints (user list, delete user)
+
+#### Services
+- `backend/src/services/comments.js` - Comment business logic (nested queries)
+
+#### Main Application
+- `backend/src/app.js` - Express app setup, middleware registration, routes
+
+#### Utilities
+- `backend/src/util/http.js` - HTTP utilities (status codes, error responses)
+
+**Backend Total**: 5 files
+
+### **Java Files** (Swing)
+- `swing-admin/AdminApp.java` - Main application frame (integrates all components)
+  - JFrame main window setup (BorderLayout)
+  - Top panel with LoginDialog integration
+  - Center panel with UserTablePanel integration
+  - Right panel with AvatarPanel integration
+  - Delete user button (admin operations)
+  - Button enable/disable logic based on login/selection state
+  - Menu bar (if needed)
+  - Main method and application entry point
+- `swing-admin/AvatarPanel.java` - Avatar display panel
+  - JPanel for avatar image display
+  - SwingWorker for async image loading (no UI freeze)
+  - Image fetching from API
+  - Image scaling and display
+  - Loading indicator
+  - Error handling for missing avatars
+
+**Java Total**: 2 files
+
+### **Database Schema**
+- `db/db-init.sql` (partial):
+  - `comments` table definition with `parent_comment_id`
+  - Seed data:
+    - Demo users (admin + regular users)
+    - Sample articles
+    - Nested comments (showing replies)
+    - Sample images
+
+### **Configuration**
+- `backend/.nvmrc` - Node version specification
+
+### **Documentation**
+- `swing-admin/README.md` - Swing admin usage guide (if needed)
+
+**Module Total**: ~11 source files (2 frontend + 5 backend + 2 Java + 1 database + 1 config)
+
+**Estimated Effort**: 56-80 hours
+
+---
+
+## **Java/Swing File Structure** (Modular Design)
+
+The Swing admin application is split into **6 separate Java files** for clean separation of concerns:
+
+### **Alpha's Java Components** (Authentication)
+1. **LoginDialog.java**
+   - Purpose: User authentication UI
+   - Responsibilities:
+     - Login form with username/password fields
+     - Login and logout buttons
+     - Session cookie storage
+     - Authentication state management
+     - Success/error message display
+   - Integration: Called by AdminApp on startup
+
+2. **HTTPClient.java**
+   - Purpose: Reusable HTTP communication utility
+   - Responsibilities:
+     - GET/POST/DELETE request methods
+     - Cookie header management (session persistence)
+     - JSON serialization/deserialization
+     - Error handling and HTTP status codes
+     - Connection timeout configuration
+   - Integration: Used by all other components for API calls
+
+### **Belta's Java Components** (Data Model)
+3. **UserTableModel.java**
+   - Purpose: MVC TableModel for user data
+   - Responsibilities:
+     - Extends AbstractTableModel
+     - Manages list of user objects
+     - Defines columns: username, articles, comments, created date
+     - Provides getValueAt, getRowCount, getColumnCount
+     - Notifies listeners on data changes (fireTableDataChanged)
+     - Add/remove/update row methods
+   - Integration: Used by UserTablePanel
+
+4. **UserTablePanel.java**
+   - Purpose: User list display component
+   - Responsibilities:
+     - Creates JTable with UserTableModel
+     - Configures column widths and renderers
+     - Implements ListSelectionListener for row selection
+     - Provides getSelectedUser() method
+     - Wraps table in JScrollPane
+     - Fires selection events to parent
+   - Integration: Embedded in AdminApp center panel
+
+### **Gamma's Java Components** (Main Application & Features)
+5. **AdminApp.java**
+   - Purpose: Main application frame and integration point
+   - Responsibilities:
+     - JFrame setup (title, size, layout)
+     - Integrates LoginDialog in top panel
+     - Embeds UserTablePanel in center
+     - Embeds AvatarPanel on right side
+     - Delete user button and functionality
+     - Refresh table after operations
+     - Enable/disable buttons based on state
+     - Application entry point (main method)
+   - Integration: Main class that ties everything together
+
+6. **AvatarPanel.java**
+   - Purpose: Async avatar image display
+   - Responsibilities:
+     - JPanel with JLabel for image
+     - SwingWorker for background image loading
+     - Fetches avatar from API using HTTPClient
+     - Scales image to fit panel
+     - Shows loading indicator during fetch
+     - Handles missing/error images gracefully
+     - No UI freezing (proper threading)
+   - Integration: Called by AdminApp when user is selected
+
+### **Component Communication Flow**
+```
+AdminApp (main frame)
+  ├─ Top: LoginDialog (alpha)
+  │    └─ Uses: HTTPClient (alpha)
+  │
+  ├─ Center: UserTablePanel (belta)
+  │    ├─ Uses: UserTableModel (belta)
+  │    └─ Data from: HTTPClient (alpha)
+  │
+  ├─ Right: AvatarPanel (gamma)
+  │    └─ Uses: HTTPClient (alpha)
+  │
+  └─ Bottom: Delete button (gamma)
+       └─ Uses: HTTPClient (alpha)
+```
+
+### **Why Split Into Multiple Files?**
+1. **Clear ownership**: Each person owns 2 complete Java files
+2. **Separation of concerns**: Each file has a single, well-defined purpose
+3. **Reusability**: HTTPClient can be used by all components
+4. **Testability**: Each component can be tested independently
+5. **MVC pattern**: Clear separation of Model (UserTableModel), View (panels), Controller (AdminApp)
+6. **Professional practice**: Follows Java best practices (one public class per file)
+7. **Reduced conflicts**: Different people work on different files
+
+---
+
+## **Shared/Configuration Files** (All team members)
+
+These files are touched by multiple people during initial setup:
 
 ### **Project Root**
-- `PLANNING_INITIAL_DESIGN.md`
-- `SPRINT_BACKLOG_ALLOCATION.md`
-- `IMPLEMENTATION_PLAN.md`
-- `RISK_MITIGATION_PLAN.md`
-- `WIREFRAMES.md`
+- `PLANNING_INITIAL_DESIGN.md` - ERD + API spec (reference for all)
+- `SPRINT_BACKLOG_ALLOCATION.md` - This file (task tracking)
+- `FILE_ASSIGNMENTS.md` - This file (module assignments)
+- `.gitignore` - Git ignore rules
+
+### **Frontend Config** (Setup phase)
+- `frontend/src/routes/+layout.js` - Root layout configuration
+
+### **Backend Config** (Setup phase)
+- `backend/package.json` - Shared dependencies
 
 ---
 
-## **Summary by Technology Area**
+## **Module Boundaries & Integration Points**
 
-### **Alpha** (Cross-functional)
-- **Frontend**: 9 files (Auth UI, Editor, Search, Responsive)
-- **Backend**: 2 files (Comments)
-- **Java**: 1 file (Swing - shared)
-- **Config/Docs**: 2 files
+### **Clear Boundaries**
+- **Alpha** owns all auth-related code (no one else touches auth)
+- **Belta** owns all article-related code (no one else touches articles)
+- **Gamma** owns all comment & admin-related code (no one else touches comments/admin)
 
-### **Belta** (Cross-functional)
-- **Database**: 1 file (schema + seed)
-- **Frontend**: 4 files (Comments UI, Profile, My Articles)
-- **Backend**: 8 files (DB setup, Articles, Images, Users)
-- **Java**: 1 file (Swing - shared)
-- **Config/Docs**: 1 file
+### **Integration Points** (Minimal overlap)
 
-### **Gamma** (Cross-functional)
-- **Frontend**: 7 files (Articles display, Home, API)
-- **Backend**: 12 files (Auth system, Admin, Services, Main app)
-- **Java**: 1 file (Swing - shared)
-- **Database**: 1 file (seed data - shared)
+| Integration | Owner A | Owner B | How it works |
+|-------------|---------|---------|--------------|
+| Auth protects Articles | alpha | belta | Belta imports alpha's auth middleware |
+| Auth protects Comments | alpha | gamma | Gamma imports alpha's auth middleware |
+| Comments on Articles | belta | gamma | Gamma's comment component used in belta's article detail page |
+| API utilities | gamma | alpha, belta | Alpha & belta import gamma's `api.js` helper |
+| Swing HTTP utility | alpha | belta, gamma | Belta & gamma use alpha's HTTPClient for API calls |
+| Swing table integration | belta | gamma | Gamma's AdminApp uses belta's UserTablePanel |
+| Swing login integration | alpha | gamma | Gamma's AdminApp embeds alpha's LoginDialog |
+
+### **Development Order**
+1. **Sprint 1 Week 1**: Each person sets up their module foundations in parallel
+2. **Sprint 1 Week 2**: Integration points tested (auth → articles → comments flow)
+3. **Sprint 2**: Each person completes their advanced features independently
+4. **Final Days**: Polish, integration testing, documentation
 
 ---
 
-## **Notes**
+## **Technology Distribution Verification**
 
-1. **Cross-functional requirement**: All team members work across frontend (Svelte), backend (Node.js/Express), and Java (Swing) as required by the project brief.
+### **Alpha** ✅ Cross-functional
+- **Frontend**: 10 Svelte files (pages, components, state management)
+- **Backend**: 6 Node.js files (routes, services, middleware)
+- **Java**: 2 Swing files (LoginDialog, HTTPClient)
+- **Database**: 2 tables (users, sessions)
 
-2. **Shared files**: Some files are marked as "shared" where multiple team members collaborate or where ownership overlaps (e.g., `Home.svelte` has search/sort from alpha and article list from gamma).
+### **Belta** ✅ Cross-functional
+- **Frontend**: 9 Svelte files (article UI, editor, search)
+- **Backend**: 6 Node.js files (articles, images, database setup)
+- **Java**: 2 Swing files (UserTableModel, UserTablePanel)
+- **Database**: 3 tables + complete schema (articles, images, structure)
+- **Config**: Package management, build tools
+- **Docs**: Complete README
 
-3. **Sprint alignment**: File assignments align with task allocations in `SPRINT_BACKLOG_ALLOCATION.md`.
+### **Gamma** ✅ Cross-functional
+- **Frontend**: 2 Svelte files (comments, API utils)
+- **Backend**: 5 Node.js files (comments, admin, app setup)
+- **Java**: 2 Swing files (AdminApp main frame, AvatarPanel)
+- **Database**: 1 table + seed data (comments, demo data)
 
-4. **Fair workload**: Distribution ensures approximately equal effort across all team members (~14-18 primary files each).
+**All three team members work across Svelte, Node.js/Express, and Java as required.**
 
-5. **Task IDs**: Sprint task IDs (e.g., S1-4, S2-3) are included to trace files back to specific backlog items.
+---
+
+## **Benefits of Feature-Based Module Allocation**
+
+### **1. Clear Ownership**
+- Each person is the expert on their module
+- Easy to identify who to ask about specific features
+- Clear responsibility for bugs and fixes
+
+### **2. Minimal Merge Conflicts**
+- Separate file ownership reduces git conflicts
+- Integration points are well-defined
+- Parallel development is easier
+
+### **3. Complete Feature Delivery**
+- Each person can demo a complete, working feature
+- End-to-end testing within module is straightforward
+- Features can be deployed independently
+
+### **4. Fair & Balanced Workload**
+- Alpha: 52-72 hours (19 files: 10 frontend + 6 backend + 2 Java + 1 docs)
+- Belta: 54-80 hours (22 files: 9 frontend + 6 backend + 2 Java + 5 config/docs)
+- Gamma: 56-80 hours (11 files: 2 frontend + 5 backend + 2 Java + 2 database/config)
+
+### **5. Professional Practice**
+- Mirrors real-world development (team owns services/features)
+- Encourages deep understanding of a complete vertical slice
+- Demonstrates software engineering principles
+
+### **6. Easy Progress Tracking**
+- Each module has clear deliverables
+- Sprint demos show complete features (not scattered tasks)
+- Teaching team can easily assess individual contributions
+
+---
+
+## **Sprint Demo Strategy**
+
+### **Sprint 1 Demo** (Feb 6)
+- **Alpha demonstrates**: "I can register a new user, login, and logout. Watch the live username availability check."
+- **Belta demonstrates**: "I can create an article, see it in the list, and view the detail page."
+- **Gamma demonstrates**: "I can add a comment on an article. As admin, I can see the user list with counts."
+
+### **Sprint 2 Demo** (Feb 13)
+- **Alpha demonstrates**: "I can edit my profile, change avatar, see avatars everywhere. The UI is responsive."
+- **Belta demonstrates**: "I can create rich articles with images using WYSIWYG editor. I can search and sort articles."
+- **Gamma demonstrates**: "Comments support nested replies to any depth. Swing admin panel manages users with avatar display."
+
+Each person showcases their **complete, working feature module** end-to-end.
+
+---
+
+## **Quick Reference: Java File Ownership**
+
+| File | Owner | Purpose | Lines (est.) |
+|------|-------|---------|--------------|
+| `LoginDialog.java` | **alpha** | Login/logout UI + session management | 80-120 |
+| `HTTPClient.java` | **alpha** | HTTP utility for API calls | 150-200 |
+| `UserTableModel.java` | **belta** | MVC TableModel for user data | 80-120 |
+| `UserTablePanel.java` | **belta** | JTable display panel | 60-100 |
+| `AdminApp.java` | **gamma** | Main frame + integration | 150-200 |
+| `AvatarPanel.java` | **gamma** | Async avatar loading panel | 100-150 |
+
+**Total**: 6 Java files, ~620-890 lines, evenly distributed (2 files per person)
+
+Each person creates **2 complete Java files** demonstrating:
+- ✅ Object-oriented design
+- ✅ Swing GUI components
+- ✅ Event handling (listeners, observers)
+- ✅ MVC pattern
+- ✅ Async operations (SwingWorker)
+- ✅ HTTP networking
+- ✅ Professional code organization

@@ -1,6 +1,6 @@
-## Sprint Backlog + Initial Task Allocation (Due Feb 5)
+## Sprint Backlog + Task Allocation (Feature-Based Modules)
 
-Aligned with `PGCIT-Project-Brief-LY-2025.pdf` deliverable “Sprint backlog with initial task allocation”.
+Aligned with `PGCIT-Project-Brief-LY-2025.pdf` deliverable "Sprint backlog with initial task allocation".
 
 ### Assumptions (keep it simple)
 
@@ -9,6 +9,20 @@ Aligned with `PGCIT-Project-Brief-LY-2025.pdf` deliverable “Sprint backlog wit
 - This backlog is written so an **entry-level** team can follow it.
 
 Team members: alpha, belta, and gamma. All team members are involved in front-end, back-end, and Java development.
+
+### Module-Based Allocation Philosophy
+
+Each team member owns a **complete feature module** (vertical slice) including:
+- Frontend UI for their module
+- Backend API for their module
+- Java Swing components related to their module
+- Database schema for their module
+
+This ensures:
+1. **Clear ownership**: Each person is responsible for one complete feature end-to-end
+2. **Cross-functional work**: Everyone touches frontend (Svelte), backend (Node.js), and Java (Swing)
+3. **Reduced conflicts**: Minimal file overlap between team members
+4. **Feature completeness**: Each module can be developed, tested, and demoed independently
 
 ### Definition of Done (DoD) for a task
 
@@ -19,33 +33,58 @@ Team members: alpha, belta, and gamma. All team members are involved in front-en
 
 ---
 
+## Feature Modules Overview
+
+| Module | Owner | Description | Technologies |
+|--------|-------|-------------|--------------|
+| **User Authentication & Profile** | alpha | Complete user identity management: register, login, logout, profile editing, avatars | Frontend + Backend + Swing Login |
+| **Articles & Content** | belta | Complete article lifecycle: create, view, edit, search, sort, images, WYSIWYG editor | Frontend + Backend + Database |
+| **Comments & Administration** | gamma | Complete engagement & admin: comments (flat & nested), admin API, Swing admin panel | Frontend + Backend + Swing Admin |
+
+---
+
 ## Sprint 1 (Feb 2 → Feb 6): Core foundations + vertical slice
 
 **Sprint goal**: working end-to-end flow: register/login → create article → view article → comment once.
 
-### Sprint 1 backlog (initial allocation)
+### Sprint 1 backlog (module-based allocation)
 
-| ID | Epic | Task | Maps to brief | Est. | Owner |
-|----|------|------|---------------|------|-------|
-| S1-1 | Project setup | Confirm folder structure + dev run commands; agree coding style; ensure the “single source of truth” ERD + API spec is in `PLANNING_INITIAL_DESIGN.md` | PM | 1–2h | alpha |
-| S1-2 | Database | Create DB schema script (`db-init.sql` skeleton): `users`, `sessions`, `articles`, `comments`, `images` with FKs + cascades | Req. 7, 15; Deliverable | 3–5h | belta |
-| S1-3 | Auth | Implement `POST /api/users` register (hash+salt), `GET /api/users/exists`, `POST /api/login`, `POST /api/logout`, `GET /api/me` | Req. 1–6; Admin API 1–2 | 6–10h | gamma |
-| S1-4 | Frontend auth UI | Register page: live username availability, password match validation, avatar choice UI placeholder; Login/Logout UI | Req. 1–3, 6 | 6–10h | alpha |
-| S1-5 | Articles (backend) | CRUD endpoints: `GET /api/articles`, `POST /api/articles`, `GET /api/articles/:id` (minimum) | Req. 8, 10 | 4–7h | belta |
-| S1-6 | Articles (frontend) | Article list page + article detail page wired to API | Req. 8 | 4–7h | gamma |
-| S1-7 | Comments (backend) | `POST /api/articles/:id/comments`, `GET /api/articles/:id/comments` (flat list) | Req. 13–15 | 4–7h | alpha |
-| S1-8 | Comments (frontend) | Basic comments UI on article detail (flat list + add comment form) | Req. 13–14 | 4–6h | belta |
-| S1-9 | Admin API (backend) | Add `is_admin` to users, then implement admin-only `GET /api/users` returning `articleCount` | Admin API 3 | 3–5h | gamma |
-| S1-10 | Swing skeleton | Create Swing JFrame + login/logout buttons + JTable + basic HTTP helper (no freeze) | Swing 1–8 | 6–10h | alpha |
+| ID | Module | Task | Maps to brief | Est. | Owner |
+|----|--------|------|---------------|------|-------|
+| **S1-1** | **Setup** | **Project setup & database foundation** | | | |
+| S1-1.1 | Setup | Confirm folder structure + dev run commands; agree coding style; ensure ERD + API spec in `PLANNING_INITIAL_DESIGN.md` | PM | 1–2h | **alpha** |
+| S1-1.2 | Setup | Create complete DB schema (`db-init.sql`): `users`, `sessions`, `articles`, `comments`, `images` with FKs + cascades | Req. 7, 15 | 3–5h | **belta** |
+| S1-1.3 | Setup | Backend app setup: Express server, middleware, DB connection, error handling utilities | Foundation | 2–4h | **gamma** |
+| **S1-2** | **Auth Module (Alpha)** | **User authentication & registration** | | | |
+| S1-2.1 | Auth | Backend: Implement `POST /api/users` (register with hash+salt), `GET /api/users/exists`, `POST /api/login`, `POST /api/logout`, `GET /api/me` | Req. 1–6 | 6–10h | **alpha** |
+| S1-2.2 | Auth | Backend: Session management service + auth middleware | Req. 4, 6 | 3–5h | **alpha** |
+| S1-2.3 | Auth | Frontend: Register page with live username availability, password validation | Req. 1–3 | 4–6h | **alpha** |
+| S1-2.4 | Auth | Frontend: Login page + logout functionality + auth state management | Req. 6 | 3–5h | **alpha** |
+| S1-2.5 | Auth | Java Swing: Create `LoginDialog.java` - login/logout UI + session handling | Swing 1–5 | 4–6h | **alpha** |
+| S1-2.6 | Auth | Java Swing: Create `HTTPClient.java` - HTTP helper for API calls (GET, POST, DELETE with cookies) | Swing | 3–5h | **alpha** |
+| **S1-3** | **Articles Module (Belta)** | **Article creation & viewing** | | | |
+| S1-3.1 | Articles | Backend: Article CRUD endpoints: `GET /api/articles`, `POST /api/articles`, `GET /api/articles/:id`, `PATCH /api/articles/:id`, `DELETE /api/articles/:id` | Req. 8, 10 | 6–10h | **belta** |
+| S1-3.2 | Articles | Backend: Article service layer + validation | Req. 8 | 2–4h | **belta** |
+| S1-3.3 | Articles | Frontend: Article list page (Home) + article cards | Req. 8 | 3–5h | **belta** |
+| S1-3.4 | Articles | Frontend: Article detail page | Req. 8 | 2–4h | **belta** |
+| S1-3.5 | Articles | Frontend: Basic article creation form (text only, WYSIWYG in Sprint 2) | Req. 10 | 3–5h | **belta** |
+| S1-3.6 | Articles | Java Swing: Create `UserTableModel.java` - MVC TableModel for user data | Swing 6–7 | 3–5h | **belta** |
+| S1-3.7 | Articles | Java Swing: Create `UserTablePanel.java` - JTable display with selection handling | Swing 8 | 3–5h | **belta** |
+| **S1-4** | **Comments Module (Gamma)** | **Basic commenting system** | | | |
+| S1-4.1 | Comments | Backend: `POST /api/articles/:id/comments`, `GET /api/articles/:id/comments` (flat list) | Req. 13–15 | 4–7h | **gamma** |
+| S1-4.2 | Comments | Backend: Comments service layer | Req. 13 | 2–3h | **gamma** |
+| S1-4.3 | Comments | Frontend: Comment list component + add comment form (flat structure) | Req. 13–14 | 4–6h | **gamma** |
+| S1-4.4 | Comments | Backend: Admin API - `GET /api/users` with article/comment counts | Admin API 3 | 3–5h | **gamma** |
+| S1-4.5 | Comments | Java Swing: Create `AdminApp.java` - Main JFrame integrating all Swing components | Swing | 3–5h | **gamma** |
 
 **Sprint 1 demo checklist (for check-in)**:
 
-- Register user (shows “username taken” live).
-- Login and stay logged in (cookie/session).
-- Create one article, view it in list, open detail.
-- Add one comment and see it display.
-- Admin user can call `GET /api/users` (even via curl/Postman).
-- Swing UI can login and populate the JTable (even if avatar panel is placeholder).
+- ✅ Register user (shows "username taken" live) - **alpha**
+- ✅ Login and stay logged in (cookie/session) - **alpha**
+- ✅ Create one article, view it in list, open detail - **belta**
+- ✅ Add one comment and see it display - **gamma**
+- ✅ Admin user can call `GET /api/users` (via Postman) - **gamma**
+- ✅ Swing UI can login and show user table - **alpha + gamma**
 
 ---
 
@@ -53,43 +92,260 @@ Team members: alpha, belta, and gamma. All team members are involved in front-en
 
 **Sprint goal**: finish all requirements + make it stable + docs + seed data.
 
-### Sprint 2 backlog (initial allocation)
+### Sprint 2 backlog (module-based allocation)
 
-| ID | Epic | Task | Maps to brief | Est. | Owner |
-|----|------|------|---------------|------|-------|
-| S2-1 | Profile | Implement `PATCH /api/users/me`, `DELETE /api/users/me` (cascade deletes verified) + profile UI | Req. 7 | 6–10h | alpha, belta |
-| S2-2 | Avatars | Predefined avatar list + optional upload endpoint `POST /api/users/me/avatar` + display avatars in UI | Req. 5 | 6–10h | gamma |
-| S2-3 | WYSIWYG | Integrate TinyMCE editor page (minimal toolbar: headings, bold/italic/underline, lists) | Req. 11 | 6–10h | alpha |
-| S2-4 | Article images | Header image upload + embedded images via editor upload endpoint (`/api/articles/:id/images`) | Req. 12 | 8–14h | belta, gamma |
-| S2-5 | Search/sort | Implement search + sort by title/username/date (UX-friendly controls) | Req. 9 | 6–10h | alpha |
-| S2-6 | “My articles” | Add “My articles” view (server filter `mine=true` or client-side) | Req. 8 | 2–4h | belta |
-| S2-7 | Nested comments | Implement replies to any depth (DB `parent_comment_id` + recursive Svelte component) | Req. 15 | 6–12h | gamma |
-| S2-8 | Comment delete rules | `DELETE /api/comments/:id` allowed for comment author OR article author; UI controls reflect permissions | Req. 16 | 4–7h | alpha, belta |
-| S2-9 | Admin delete user | Implement `DELETE /api/users/:id` (admin only) + verify cascade removes articles/comments | Admin API 4 | 4–7h | gamma |
-| S2-10 | Swing avatar panel | On JTable selection, async fetch avatar image and show in JPanel without freezing | Swing 9 | 6–10h | alpha |
-| S2-11 | Swing delete | Delete selected user via API and remove row from JTable; enable/disable buttons correctly | Swing 10–11 | 4–8h | belta |
-| S2-12 | Swing patterns | Ensure MVC TableModel + observers/listeners; document patterns used | Swing 12 | 2–4h | gamma |
-| S2-13 | Responsive UI | Make layout responsive + consistent styling across pages; add loading states + inline errors | Req. 17–18 | 6–10h | alpha |
-| S2-14 | Custom feature | Implement one approved extra feature (small): e.g. tags OR draft/publish OR bookmarks | Req. 20 | 6–12h | alpha, belta, gamma |
-| S2-15 | Submission docs | Finalize `README.md` (setup, demo users, API docs, pages, Swing usage) | Deliverables | 3–6h | belta |
-| S2-16 | Seed data | Finalize `db-init.sql` with at least 2 users + sample articles + nested comments | Deliverables | 2–4h | gamma |
+| ID | Module | Task | Maps to brief | Est. | Owner |
+|----|--------|------|---------------|------|-------|
+| **S2-1** | **Auth Module (Alpha)** | **Profile management & avatars** | | | |
+| S2-1.1 | Auth | Backend: `PATCH /api/users/me` (update profile including password change) | Req. 7 | 3–5h | **alpha** |
+| S2-1.2 | Auth | Backend: `DELETE /api/users/me` with cascade deletes verified | Req. 7 | 2–4h | **alpha** |
+| S2-1.3 | Auth | Backend: `POST /api/users/me/avatar` (avatar upload) + predefined avatar list | Req. 5 | 4–6h | **alpha** |
+| S2-1.4 | Auth | Frontend: Profile page with edit form (username, password, avatar selection) | Req. 7 | 4–6h | **alpha** |
+| S2-1.5 | Auth | Frontend: Avatar display in UI (navbar, article cards, comments) | Req. 5 | 2–4h | **alpha** |
+| S2-1.6 | Auth | Frontend: Responsive layout + loading states + error handling | Req. 17–18 | 4–6h | **alpha** |
+| S2-1.7 | Auth | Frontend: Form validation utilities + UX polish | Req. 17 | 2–3h | **alpha** |
+| **S2-2** | **Articles Module (Belta)** | **Advanced article features** | | | |
+| S2-2.1 | Articles | Backend: Image upload service + storage for article images | Req. 12 | 4–6h | **belta** |
+| S2-2.2 | Articles | Backend: `POST /api/articles/:id/images` (header + embedded images) | Req. 12 | 3–5h | **belta** |
+| S2-2.3 | Articles | Backend: Search + sort API (by title, author, date) | Req. 9 | 3–5h | **belta** |
+| S2-2.4 | Articles | Backend: "My articles" filter (`?mine=true`) | Req. 8 | 1–2h | **belta** |
+| S2-2.5 | Articles | Frontend: TinyMCE WYSIWYG editor integration (headings, bold, italic, underline, lists) | Req. 11 | 6–10h | **belta** |
+| S2-2.6 | Articles | Frontend: Article editor with header image upload + embedded images | Req. 12 | 4–7h | **belta** |
+| S2-2.7 | Articles | Frontend: Search bar + sort controls (UX-friendly) | Req. 9 | 3–5h | **belta** |
+| S2-2.8 | Articles | Frontend: "My articles" view/filter | Req. 8 | 2–3h | **belta** |
+| S2-2.9 | Articles | Documentation: Finalize `README.md` (setup, demo users, API docs) | Deliverable | 3–6h | **belta** |
+| **S2-3** | **Comments & Admin Module (Gamma)** | **Advanced comments & admin panel** | | | |
+| S2-3.1 | Comments | Backend: Nested comments - update schema with `parent_comment_id`, recursive queries | Req. 15 | 4–6h | **gamma** |
+| S2-3.2 | Comments | Backend: `DELETE /api/comments/:id` (author OR article author can delete) | Req. 16 | 3–5h | **gamma** |
+| S2-3.3 | Comments | Backend: `DELETE /api/users/:id` (admin only) with cascade verification | Admin API 4 | 4–6h | **gamma** |
+| S2-3.4 | Comments | Frontend: Recursive comment component (nested replies to any depth) | Req. 15 | 6–10h | **gamma** |
+| S2-3.5 | Comments | Frontend: Delete button with permission checks (show only if authorized) | Req. 16 | 2–4h | **gamma** |
+| S2-3.6 | Comments | Java Swing: Create `AvatarPanel.java` - async image loading with SwingWorker, no UI freeze | Swing 9 | 4–6h | **gamma** |
+| S2-3.7 | Comments | Java Swing: In `AdminApp.java` - delete user button + table refresh + enable/disable logic | Swing 10–11 | 4–6h | **gamma** |
+| S2-3.8 | Comments | Java Swing: Document MVC patterns used (TableModel, observers, listeners) in code comments | Swing 12 | 2–4h | **gamma** |
+| S2-3.9 | Comments | Database: Finalize seed data (2+ users, sample articles, nested comments) | Deliverable | 2–4h | **gamma** |
+| **S2-4** | **Integration & Polish** | **Team collaboration on final features** | | | |
+| S2-4.1 | Custom | Implement custom feature (e.g., tags, draft/publish, bookmarks) | Req. 20 | 6–12h | **alpha, belta, gamma** |
+| S2-4.2 | Polish | CSS consistency + responsive design final touches | Req. 17 | 2–4h | **alpha** |
+| S2-4.3 | Polish | Integration testing + bug fixes | QA | 3–5h | **all** |
 
 ---
 
-## Initial high-level allocation (fair workload)
+## Feature Module Ownership Summary
 
-You can show this to the teaching team as evidence of fair distribution.
+### **ALPHA - User Authentication & Profile Module** 👤
 
-- **alpha (cross-functional)**: Project setup, frontend auth UI, WYSIWYG editor, search/sort, responsive UI, comment backend, Swing avatar panel
-- **belta (cross-functional)**: Database schema, articles backend, comments frontend, profile system, "My articles" view, Swing delete, submission docs
-- **gamma (cross-functional)**: Auth system, articles frontend, admin API, avatars, nested comments, Swing patterns, seed data
+**Responsibility**: Complete user identity lifecycle from registration to profile management
 
-### Rotation note (important for marking fairness)
+#### Frontend (Svelte)
+- Registration page with live validation
+- Login/logout functionality
+- Profile editing page
+- Avatar selection & display throughout app
+- Auth state management (store.js)
+- Responsive UI & loading states
+- Form validation utilities
 
-All team members (alpha, belta, and gamma) are involved in:
-- **Frontend development**: Svelte components, UI/UX, responsive design
-- **Backend development**: Node.js/Express APIs, database operations, authentication
-- **Java development**: Swing UI, MVC patterns, async networking
+#### Backend (Node.js/Express)
+- `backend/src/routes/auth.js` - Register, login, logout endpoints
+- `backend/src/routes/users.js` - User CRUD, avatar upload
+- `backend/src/services/users.js` - User business logic
+- `backend/src/services/sessions.js` - Session management
+- `backend/src/middleware/auth.js` - Authentication middleware
+- `backend/src/util/validation.js` - Validation utilities
 
-This cross-functional approach ensures fair distribution and comprehensive skill development across all technology areas.
+#### Java (Swing)
+- `swing-admin/LoginDialog.java` - Login/logout dialog component
+- `swing-admin/HTTPClient.java` - HTTP client utility for API calls with cookie/session management
 
+#### Database
+- Users table schema
+- Sessions table schema
+
+**Estimated effort**: 45-65 hours
+
+---
+
+### **BELTA - Articles & Content Module** 📝
+
+**Responsibility**: Complete article lifecycle from creation to search/display
+
+#### Frontend (Svelte)
+- Article list (Home page)
+- Article detail view
+- Article editor with WYSIWYG (TinyMCE)
+- Article cards component
+- Search & sort controls
+- "My articles" filter
+- Image upload UI
+
+#### Backend (Node.js/Express)
+- `backend/src/routes/articles.js` - Article CRUD endpoints
+- `backend/src/services/articles.js` - Article business logic
+- `backend/src/services/images.js` - Image upload & storage
+- `backend/src/util/uploads.js` - File upload utilities
+- `backend/src/db/db.js` - Database connection
+- `backend/src/db/init.js` - Database initialization
+- Search & sort implementation
+
+#### Java (Swing)
+- `swing-admin/UserTableModel.java` - Custom TableModel implementing MVC pattern
+- `swing-admin/UserTablePanel.java` - JTable panel with user list display and selection handling
+
+#### Database
+- Articles table schema
+- Images table schema
+- Initial schema setup (`db-init.sql`)
+
+#### Documentation
+- `README.md` - Final documentation
+
+**Estimated effort**: 54-80 hours
+
+---
+
+### **GAMMA - Comments & Administration Module** 💬🔧
+
+**Responsibility**: Complete commenting system + admin panel for user management
+
+#### Frontend (Svelte)
+- Comment display component (flat & nested)
+- Add comment form
+- Reply functionality (nested to any depth)
+- Delete comment UI with permissions
+- API helper utilities (`lib/api.js`)
+
+#### Backend (Node.js/Express)
+- `backend/src/routes/comments.js` - Comment CRUD endpoints
+- `backend/src/services/comments.js` - Comment business logic (including nested)
+- `backend/src/routes/admin.js` - Admin API (user list, delete user)
+- `backend/src/app.js` - Express app setup
+- `backend/src/util/http.js` - HTTP utilities
+
+#### Java (Swing)
+- `swing-admin/AdminApp.java` - Main application frame, integrates all components
+- `swing-admin/AvatarPanel.java` - Avatar display panel with async image loading (SwingWorker)
+- Delete user functionality and table refresh
+- MVC patterns documentation (observers, listeners)
+
+#### Database
+- Comments table schema (including parent_comment_id)
+- Seed data (users, articles, nested comments)
+
+**Estimated effort**: 50-72 hours
+
+---
+
+## Cross-Functional Verification
+
+✅ **Alpha** - Frontend (7 pages/components) + Backend (6 files) + Java (2 Swing files: LoginDialog, HTTPClient) + Database (2 tables)
+✅ **Belta** - Frontend (8 components) + Backend (7 files) + Java (2 Swing files: UserTableModel, UserTablePanel) + Database (3 tables + schema) + Docs
+✅ **Gamma** - Frontend (4 components) + Backend (5 files) + Java (2 Swing files: AdminApp, AvatarPanel) + Database (1 table + seed)
+
+All team members work across:
+- **Frontend development**: Svelte components, routing, UI/UX, responsive design
+- **Backend development**: Express APIs, services, middleware, database operations
+- **Java development**: Swing UI, MVC patterns, async operations, HTTP networking
+
+---
+
+## Integration Points (Minimal Overlap)
+
+| Integration | Owner A | Owner B | Description |
+|-------------|---------|---------|-------------|
+| Auth → Articles | alpha | belta | Auth middleware protects article endpoints |
+| Auth → Comments | alpha | gamma | Auth middleware protects comment endpoints |
+| Articles → Comments | belta | gamma | Comments display on article detail page |
+| Frontend API | alpha | gamma | Shared API utility functions (minimal collaboration) |
+| Swing Integration | alpha | gamma | Alpha handles login, gamma handles admin features |
+
+---
+
+## Notes on Module-Based Approach
+
+1. **Clear boundaries**: Each module has distinct responsibilities with minimal overlap
+2. **Independent development**: Modules can be developed in parallel with minimal merge conflicts
+3. **Complete ownership**: Each person owns their feature end-to-end, making them the expert
+4. **Fair workload**: Each module has 45-72 estimated hours (balanced distribution)
+5. **Cross-functional**: Every person touches all three technology stacks (Svelte, Node.js, Java)
+6. **Testable**: Each module can be tested independently before integration
+7. **Demoable**: Each person can demo their complete feature module
+
+This allocation ensures the teaching team can clearly see:
+- Each team member's complete contribution
+- Fair distribution of work
+- Cross-functional skill development
+- Professional software engineering practices (module ownership, separation of concerns)
+
+---
+
+## Java/Swing File Breakdown
+
+The Swing admin application is divided into **6 separate Java files** to ensure clear ownership:
+
+### **Alpha's Java Files** (Authentication Layer)
+1. **LoginDialog.java** (80-120 lines)
+   - Login/logout UI component
+   - Session cookie management
+   - Authentication state handling
+
+2. **HTTPClient.java** (150-200 lines)
+   - Reusable HTTP utility class
+   - GET/POST/DELETE methods
+   - Cookie header management
+   - JSON handling
+
+**Alpha's Java responsibility**: Authentication infrastructure that other components depend on
+
+### **Belta's Java Files** (Data Model Layer)
+3. **UserTableModel.java** (80-120 lines)
+   - Extends AbstractTableModel (MVC pattern)
+   - Manages user data list
+   - Column definitions and data access
+   - Observer pattern implementation
+
+4. **UserTablePanel.java** (60-100 lines)
+   - JTable display component
+   - Selection handling (ListSelectionListener)
+   - Scroll pane integration
+   - Event propagation
+
+**Belta's Java responsibility**: Data model and table display following MVC pattern
+
+### **Gamma's Java Files** (Application & Features Layer)
+5. **AdminApp.java** (150-200 lines)
+   - Main JFrame application
+   - Component integration (LoginDialog, UserTablePanel, AvatarPanel)
+   - Delete user functionality
+   - Button state management
+   - Application entry point (main method)
+
+6. **AvatarPanel.java** (100-150 lines)
+   - Avatar display panel
+   - SwingWorker for async loading (no UI freeze)
+   - Image fetching and scaling
+   - Loading/error states
+
+**Gamma's Java responsibility**: Main application and advanced features (async operations)
+
+### **Total Java Distribution**
+- Each person: 2 Java files
+- Total lines: ~620-890 lines
+- All demonstrate: OOP, Swing GUI, MVC patterns, event handling, networking
+
+This ensures **fair Java workload** and **clear module boundaries**.
+
+---
+
+## Complete File Count Summary
+
+| Team Member | Frontend (Svelte) | Backend (Node.js) | Java (Swing) | Database | Config/Docs | Total Files | Est. Hours |
+|-------------|-------------------|-------------------|--------------|----------|-------------|-------------|------------|
+| **alpha** | 10 files | 6 files | 2 files | 2 tables | 1 file | **19 files** | 52-72h |
+| **belta** | 9 files | 6 files | 2 files | 3 tables + schema | 5 files | **22 files** | 54-80h |
+| **gamma** | 2 files | 5 files | 2 files | 1 table + seed | 2 files | **11 files** | 56-80h |
+
+✅ All team members have equal Java involvement (2 files each)
+✅ All team members work across frontend, backend, and Java
+✅ Workload is balanced (52-80 hours per person)
+✅ Each person owns a complete, testable feature module
