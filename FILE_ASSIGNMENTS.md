@@ -33,7 +33,7 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 ### **Backend Files** (Node.js/Express)
 
 #### Routes
-- `backend/src/routes/auth.js` - Authentication endpoints (register, login, logout)
+- `backend/src/routes/auth.js` - Authentication endpoints (login, logout, current user)
 - `backend/src/routes/users.js` - User management endpoints (profile update, delete, avatar)
 
 #### Services

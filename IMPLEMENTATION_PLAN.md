@@ -112,7 +112,7 @@ Design the API to serve both the Svelte site and Swing admin app. Return JSON, u
 - **GET `/api/users/exists?username=...`** (to satisfy Req. 2 “immediate” username availability)
   - **200**: `{ "available": true/false }`
 - **POST `/api/users`** (register, Req. 1)
-- **GET `/api/users/me`** (current profile)
+- **GET `/api/me`** (current profile)
 - **PATCH `/api/users/me`** (edit profile including username, Req. 7)
 - **DELETE `/api/users/me`** (delete account, Req. 7)
 - **POST `/api/users/me/avatar`** (upload avatar) and/or choose predefined avatar via profile update
@@ -198,11 +198,16 @@ Admin-only (explicit requirement):
 
 - Keep the Swing app as **plain Java source** (no Maven/Gradle).
 - Use standard library only: `javax.swing`, `java.net.HttpURLConnection`, `java.io`, `java.util`.
-- Example layout:
-  - `swing-admin/AdminApp.java` (main class)
-  - Optional: small helper classes in the same file (static inner classes) to avoid extra files.
+- Swing file layout (matches the project structure):
+  - `swing-admin/AdminApp.java` (main JFrame + integration)
+  - `swing-admin/LoginDialog.java` (login/logout UI)
+  - `swing-admin/HTTPClient.java` (HTTP helper + cookie session)
+  - `swing-admin/UserTableModel.java` (MVC model for JTable)
+  - `swing-admin/UserTablePanel.java` (JTable panel + selection)
+  - `swing-admin/AvatarPanel.java` (async avatar loading via SwingWorker)
 - Compile/run (Windows):
-  - `javac AdminApp.java`
+  - `cd swing-admin`
+  - `javac *.java`
   - `java AdminApp`
 
 ### UI layout (single `JFrame`)

@@ -443,7 +443,7 @@ Articles (Req. 8–12):
 | PATCH  | `/api/articles/:id`                          | Yes      | Edit article (author/admin)      | 200         | 400, 401, 403, 404 |
 | DELETE | `/api/articles/:id`                          | Yes      | Delete article (author/admin)    | 204         | 401, 403, 404      |
 | POST   | `/api/articles/:id/header-image`             | Yes      | Upload/replace header image      | 200/204     | 400, 401, 403      |
-| POST   | `/api/articles/:id/header-image?remove=true` | Yes      | Remove header image              | 204         | 400, 401, 403      |
+| POST   | `/api/articles/:id/header-image?remove=true` | Yes      | Remove header image              | 200         | 400, 401, 403      |
 | POST   | `/api/articles/:id/images`                   | Yes      | Upload embedded image for editor | 200 `{url}` | 400, 401, 403      |
 
 Comments (Req. 13–16):
@@ -452,7 +452,7 @@ Comments (Req. 13–16):
 | ------ | ---------------------------- | -------- | ----------------------------------------- | ------- | ------------- |
 | GET    | `/api/articles/:id/comments` | Optional | Fetch comments for article                | 200     | 404           |
 | POST   | `/api/articles/:id/comments` | Yes      | Add comment/reply                         | 201     | 400, 401, 404 |
-| DELETE | `/api/comments/:id`          | Yes      | Delete (comment author OR article author) | 204     | 401, 403, 404 |
+| DELETE | `/api/comments/:id`          | Yes      | Delete (comment author OR article author OR admin) | 204     | 401, 403, 404 |
 
 Admin endpoints (explicitly required for Swing):
 

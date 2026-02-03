@@ -147,8 +147,8 @@ This ensures:
 - Form validation utilities
 
 #### Backend (Node.js/Express)
-- `backend/src/routes/auth.js` - Register, login, logout endpoints
-- `backend/src/routes/users.js` - User CRUD, avatar upload
+- `backend/src/routes/auth.js` - Login, logout, current user (`GET /api/me`)
+- `backend/src/routes/users.js` - Register + username availability + profile CRUD + avatar upload
 - `backend/src/services/users.js` - User business logic
 - `backend/src/services/sessions.js` - Session management
 - `backend/src/middleware/auth.js` - Authentication middleware
