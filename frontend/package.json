@@ -1,0 +1,23 @@
+{
+  "name": "pgcit-blog-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "sync": "svelte-kit sync"
+  },
+  "dependencies": {
+    "@tinymce/tinymce-svelte": "^3.2.0",
+    "svelte": "^4.2.18",
+    "tinymce": "^8.3.2"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^7.0.0",
+    "@sveltejs/kit": "^2.50.2",
+    "@sveltejs/vite-plugin-svelte": "^3.0.2",
+    "vite": "^5.4.12"
+  }
+}
