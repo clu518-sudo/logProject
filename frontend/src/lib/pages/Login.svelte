@@ -8,6 +8,19 @@
   let error = "";
   let loading = false;
 
+  /**
+   * Submit login form.
+   *
+   * **Inputs**: `username`, `password` (component state)
+   * **Output**: none (updates UI state, navigates)
+   * **Side effects**
+   * - Sends POST `/api/login` (sets cookie)
+   * - Updates `me` store via `loadMe()`
+   * - Navigates to `/`
+   *
+   * **Logic**
+   * - Clear error -> set loading -> login -> loadMe -> goto home -> stop loading.
+   */
   async function submit() {
     error = "";
     loading = true;
@@ -22,6 +35,13 @@
     }
   }
 
+  /**
+   * Log out from the app.
+   *
+   * **Inputs**: none
+   * **Output**: none
+   * **Side effects**: POST `/api/logout`, clears `me` store, navigates home
+   */
   async function logout() {
     await apiFetch("/api/logout", { method: "POST" });
     me.set(null);

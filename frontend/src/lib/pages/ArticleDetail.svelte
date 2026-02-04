@@ -11,6 +11,8 @@
   let replyTo = null;
   let replyContent = "";
 
+  // Normalize image path for absolute URLs and local uploads.
+  // Logic: empty -> "", absolute -> keep, else ensure leading slash.
   function normalizePath(p) {
     if (!p) return "";
     // allow absolute URLs
@@ -19,6 +21,8 @@
     return p.startsWith("/") ? p : `/${p}`;
   }
 
+  // Build a nested comment tree from a flat list.
+  // Logic: map by id -> attach children -> return top-level roots.
   function buildTree(list) {
     const map = new Map();
     list.forEach((c) => map.set(c.id, { ...c, children: [] }));
@@ -35,6 +39,8 @@
     return roots;
   }
 
+  // Load article and comments, then compute delete permissions.
+  // Logic: fetch article -> fetch comments -> add canDelete -> build tree.
   async function load() {
     if (!id) return;
     error = "";
@@ -52,6 +58,8 @@
     }
   }
 
+  // Submit a new comment (or reply) and refresh the list.
+  // Logic: validate -> POST -> reset reply state -> reload.
   async function submitComment() {
     if (!replyContent.trim()) return;
     await apiFetch(`/api/articles/${id}/comments`, {
@@ -63,15 +71,18 @@
     await load();
   }
 
+  // Delete a comment by id and refresh the list.
   async function deleteComment(comment) {
     await apiFetch(`/api/comments/${comment.id}`, { method: "DELETE" });
     await load();
   }
 
+  // Set the current comment being replied to.
   function openReply(comment) {
     replyTo = comment;
   }
 
+  // On mount, apply page-specific body styles and load data.
   onMount(() => {
     // Apply the "Article Detail" page look without affecting other routes
     document.body.classList.add("article-detail-body");
@@ -82,11 +93,13 @@
   });
 
   let lastLoadedId = null;
+  // Reload data when the route id changes.
   $: if (id && id !== lastLoadedId) {
     lastLoadedId = id;
     load();
   }
 
+  // Reactive derived values for avatars and header image URL.
   $: authorAvatarUrl = article ? `/api/users/${article.author.id}/avatar` : "";
   $: rawHeaderPath = article?.headerImagePath || article?.header_image_path || "";
   $: headerPath = normalizePath(rawHeaderPath);
@@ -172,11 +185,9 @@
 </div>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
-
   :global(body.article-detail-body) {
-    font-family: "DM Sans", sans-serif;
-    background-color: #f2f5f7;
+    font-family: "Caveat", "Segoe UI", system-ui, sans-serif;
+    background-color: #000000;
     line-height: 1.5;
   }
 
@@ -204,7 +215,7 @@
     width: 100%;
     max-width: 600px;
     border-radius: 8px;
-    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 30px 0 rgba(0, 0, 0, 0.5);
     background-color: #fff;
     padding: 2.5rem;
     margin-left: auto;
@@ -248,7 +259,7 @@
     height: 260px;
     object-fit: cover;
     border-radius: 10px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
   }
 
   .title {
@@ -267,7 +278,7 @@
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #132860;
   }
 
   .comment-actions {
@@ -292,15 +303,15 @@
     overflow: auto;
     padding: 0.9rem 1rem;
     border-radius: 8px;
-    background: #f2f5f7;
-    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    background: #000000;
+    box-shadow: inset 0 0 0 1px rgba(19, 40, 96, 0.5);
   }
 
   .article-content :global(code) {
     display: inline-block;
     padding: 0.125em 0.25em;
     border-radius: 2px;
-    background-color: #bee5d3;
+    background-color: #132860;
   }
 
   .article-content :global(pre code) {

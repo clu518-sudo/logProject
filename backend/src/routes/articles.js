@@ -12,10 +12,14 @@ import {
 } from "../services/articles.js";
 import { createImage } from "../services/images.js";
 
+// Create a router for article-related endpoints.
 const router = express.Router();
+// Multer upload handlers for header images and editor images.
 const headerUpload = imageUpload("header-images").single("image");
 const editorUpload = imageUpload("article-images").single("image");
 
+// List articles with optional filters.
+// Logic: read query params -> enforce auth for "mine" -> query DB -> map fields -> return list.
 router.get("/articles", async (req, res, next) => {
   try {
     const mine = req.query.mine === "true";
@@ -53,6 +57,8 @@ router.get("/articles", async (req, res, next) => {
   }
 });
 
+// Create a new article for the logged-in user.
+// Logic: validate title -> create record -> return created article.
 router.post("/articles", requireAuth, async (req, res, next) => {
   try {
     const { title, contentHtml, isPublished } = req.body || {};
@@ -72,6 +78,8 @@ router.post("/articles", requireAuth, async (req, res, next) => {
   }
 });
 
+// Get a single article by id.
+// Logic: fetch article -> enforce draft access rules -> return full article payload.
 router.get("/articles/:id", async (req, res, next) => {
   try {
     const article = await getArticleById(req.params.id);
@@ -110,6 +118,8 @@ router.get("/articles/:id", async (req, res, next) => {
   }
 });
 
+// Update an article (author or admin only).
+// Logic: fetch -> authorize -> validate title -> update -> return updated.
 router.patch("/articles/:id", requireAuth, async (req, res, next) => {
   try {
     const article = await getArticleById(req.params.id);
@@ -137,6 +147,8 @@ router.patch("/articles/:id", requireAuth, async (req, res, next) => {
   }
 });
 
+// Delete an article (author or admin only).
+// Logic: fetch -> authorize -> delete -> return 204.
 router.delete("/articles/:id", requireAuth, async (req, res, next) => {
   try {
     const article = await getArticleById(req.params.id);
@@ -153,6 +165,8 @@ router.delete("/articles/:id", requireAuth, async (req, res, next) => {
   }
 });
 
+// Upload or remove an article header image.
+// Logic: handle upload -> authorize -> optional remove -> update header path.
 router.post("/articles/:id/header-image", requireAuth, (req, res, next) => {
   headerUpload(req, res, async (err) => {
     if (err)
@@ -184,6 +198,8 @@ router.post("/articles/:id/header-image", requireAuth, (req, res, next) => {
   });
 });
 
+// Upload an inline image for the editor.
+// Logic: handle upload -> authorize -> create image record -> return URL.
 router.post("/articles/:id/images", requireAuth, (req, res, next) => {
   editorUpload(req, res, async (err) => {
     if (err)

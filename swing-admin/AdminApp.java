@@ -15,12 +15,35 @@ public class AdminApp extends JFrame {
 
     private LoginDialog loginDialog;
 
+    /**
+     * Main window constructor.
+     *
+     * **Inputs**: none
+     * **Output**: a configured (but not yet visible) JFrame
+     * **Side effects**: creates Swing components in memory
+     *
+     * **Logic**
+     * - Set window title -> build UI -> sync enabled/disabled state.
+     */
     public AdminApp() {
         super("PGCIT Admin");
         buildUI();
         bindState();
     }
 
+    /**
+     * Build all Swing components and wire event handlers.
+     *
+     * **Inputs**: none
+     * **Output**: none
+     * **Side effects**: creates panels/buttons, registers listeners
+     *
+     * **Key term**
+     * - *Listener*: a callback that runs when a user clicks/selects something.
+     *
+     * **Logic**
+     * - Layout panels -> construct `LoginDialog` -> hook up button/table events.
+     */
     private void buildUI() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(900, 600);
@@ -65,6 +88,14 @@ public class AdminApp extends JFrame {
         });
     }
 
+    /**
+     * Refresh UI enabled/disabled state based on app state.
+     *
+     * **Logic**
+     * - If not logged in -> enable Login only.
+     * - If logged in -> enable Logout.
+     * - Enable Delete only when logged in AND a user row is selected.
+     */
     private void bindState() {
         boolean loggedIn = client.isLoggedIn();
         loginBtn.setEnabled(!loggedIn);
@@ -73,11 +104,30 @@ public class AdminApp extends JFrame {
         if (!loggedIn) statusLabel.setText("Not logged in");
     }
 
+    /**
+     * Clear UI data when the admin logs out.
+     *
+     * **Side effects**
+     * - Empties the table model
+     * - Clears avatar panel
+     */
     private void clearAll() {
         userTablePanel.setUsers(new java.util.ArrayList<>());
         avatarPanel.clear();
     }
 
+    /**
+     * Log out using a background worker (so the UI does not freeze).
+     *
+     * **Inputs**: none
+     * **Output**: none
+     * **Side effects**
+     * - Sends POST `/api/logout`
+     * - Clears local UI and cookie state
+     *
+     * **Key term**
+     * - *SwingWorker*: runs work in a background thread, then updates UI on the EDT.
+     */
     private void logout() {
         logoutBtn.setEnabled(false);
         new SwingWorker<Void, Void>() {
@@ -99,6 +149,13 @@ public class AdminApp extends JFrame {
         }.execute();
     }
 
+    /**
+     * Fetch user list from backend and show it in the table.
+     *
+     * **Side effects**
+     * - Sends GET `/api/users` (admin endpoint)
+     * - Updates table model
+     */
     private void fetchUsers() {
         new SwingWorker<java.util.List<UserRow>, Void>() {
             @Override
@@ -119,6 +176,19 @@ public class AdminApp extends JFrame {
         }.execute();
     }
 
+    /**
+     * Delete the currently selected user (admin-only).
+     *
+     * **Inputs**: selection from table
+     * **Output**: none
+     * **Side effects**
+     * - Shows confirmation dialogs
+     * - Sends DELETE `/api/users/:id`
+     * - Refreshes user list after deletion
+     *
+     * **Logic**
+     * - Validate selection -> prevent deleting admin -> confirm -> delete -> reload.
+     */
     private void deleteSelected() {
         UserRow user = userTablePanel.getSelectedUser();
         if (user == null) return;
@@ -149,10 +219,22 @@ public class AdminApp extends JFrame {
         }.execute();
     }
 
+    /**
+     * Show a yes/no confirmation dialog.
+     *
+     * @param msg message to display
+     * @return true if user clicked Yes
+     */
     private boolean confirm(String msg) {
         return JOptionPane.showConfirmDialog(this, msg, "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
 
+    /**
+     * App entry point.
+     *
+     * **Key term**
+     * - *EDT (Event Dispatch Thread)*: the Swing UI thread. UI work should happen here.
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new AdminApp().setVisible(true));
     }

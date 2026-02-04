@@ -4,6 +4,7 @@
   export let onReply;
   export let onDelete;
 
+  // Reactive avatar URL for the comment author.
   $: avatarUrl = `/api/users/${comment.authorUserId}/avatar`;
 </script>
 
@@ -39,7 +40,7 @@
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #132860;
     flex-shrink: 0;
   }
 </style>

@@ -14,6 +14,13 @@ public class AvatarPanel extends JPanel {
     private final JLabel title = new JLabel("No user selected", SwingConstants.CENTER);
     private final JLabel avatarLabel = new JLabel("", SwingConstants.CENTER);
 
+    /**
+     * Create the panel and basic layout for avatar display.
+     *
+     * @param client HTTP client used to fetch avatar bytes
+     *
+     * **Side effects**: creates Swing labels and adds them to the panel
+     */
     public AvatarPanel(HTTPClient client) {
         super(new BorderLayout());
         this.client = client;
@@ -22,6 +29,18 @@ public class AvatarPanel extends JPanel {
         add(avatarLabel, BorderLayout.CENTER);
     }
 
+    /**
+     * Show the selected user (name + avatar).
+     *
+     * @param user selected row from the table (may be null)
+     *
+     * **Output**: none
+     * **Side effects**: updates Swing labels, triggers background download
+     *
+     * **Logic**
+     * - If null: reset UI -> return.
+     * - Else: set title -> load avatar asynchronously.
+     */
     public void showUser(UserRow user) {
         if (user == null) {
             title.setText("No user selected");
@@ -32,11 +51,22 @@ public class AvatarPanel extends JPanel {
         loadAvatar(user.id);
     }
 
+    /**
+     * Reset the panel to "no user selected".
+     */
     public void clear() {
         title.setText("No user selected");
         avatarLabel.setIcon(null);
     }
 
+    /**
+     * Fetch avatar bytes in a background thread and update the UI when done.
+     *
+     * @param userId user id to fetch avatar for
+     *
+     * **Key term**
+     * - *Image scaling*: we resize to 120x120 so the UI stays neat.
+     */
     private void loadAvatar(int userId) {
         avatarLabel.setIcon(null);
         new SwingWorker<ImageIcon, Void>() {

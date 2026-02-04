@@ -27,6 +27,15 @@ public class LoginDialog extends JDialog {
     private final JButton logoutBtn = new JButton("Logout");
     private final JLabel statusLabel = new JLabel("Not logged in");
 
+    /**
+     * Create the modal login dialog and wire handlers.
+     *
+     * @param owner parent window
+     * @param client HTTP client (stores session cookie after login)
+     * @param listener callback when login/logout succeeds
+     *
+     * **Side effects**: builds UI components
+     */
     public LoginDialog(Frame owner, HTTPClient client, Listener listener) {
         super(owner, "Admin Login", true);
         this.client = client;
@@ -35,6 +44,12 @@ public class LoginDialog extends JDialog {
         bindState();
     }
 
+    /**
+     * Build the dialog layout and components.
+     *
+     * **Logic**
+     * - Build form fields -> build buttons -> register click handlers -> pack dialog.
+     */
     private void buildUI() {
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
@@ -73,11 +88,23 @@ public class LoginDialog extends JDialog {
         setLocationRelativeTo(getOwner());
     }
 
+    /**
+     * Open (show) the dialog.
+     *
+     * **Side effects**: makes dialog visible and blocks parent (modal).
+     */
     public void open() {
         bindState();
         setVisible(true);
     }
 
+    /**
+     * Sync enabled/disabled UI state based on whether we have a cookie.
+     *
+     * **Logic**
+     * - If logged in: disable username/password + login button, enable logout.
+     * - Else: enable username/password + login button, disable logout.
+     */
     private void bindState() {
         boolean loggedIn = client.isLoggedIn();
         loginBtn.setEnabled(!loggedIn);
@@ -87,6 +114,16 @@ public class LoginDialog extends JDialog {
         statusLabel.setText(loggedIn ? "Logged in" : "Not logged in");
     }
 
+    /**
+     * Perform login without freezing the UI.
+     *
+     * **Side effects**
+     * - Calls backend POST `/api/login`
+     * - On success, notifies listener and closes dialog
+     *
+     * **Logic**
+     * - Disable button -> SwingWorker does network -> on done, show success/error.
+     */
     private void login() {
         loginBtn.setEnabled(false);
         statusLabel.setText("Logging in...");
@@ -114,6 +151,13 @@ public class LoginDialog extends JDialog {
         }.execute();
     }
 
+    /**
+     * Perform logout without freezing the UI.
+     *
+     * **Side effects**
+     * - Calls backend POST `/api/logout`
+     * - Clears cookie inside HTTPClient
+     */
     private void logout() {
         logoutBtn.setEnabled(false);
         statusLabel.setText("Logging out...");

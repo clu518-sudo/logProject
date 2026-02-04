@@ -14,31 +14,37 @@ public class UserTableModel extends AbstractTableModel {
     private final String[] columns = {"Username", "Real Name", "DOB", "Articles"};
     private List<UserRow> users = new ArrayList<>();
 
+    // Replace the user list and notify the table to refresh.
     public void setUsers(List<UserRow> list) {
         users = list != null ? list : new ArrayList<>();
         fireTableDataChanged();
     }
 
+    // Get a user row by table index.
     public UserRow getUserAt(int row) {
         return users.get(row);
     }
 
     @Override
+    // Number of rows in the table.
     public int getRowCount() {
         return users.size();
     }
 
     @Override
+    // Number of columns in the table.
     public int getColumnCount() {
         return columns.length;
     }
 
     @Override
+    // Header label for each column.
     public String getColumnName(int column) {
         return columns[column];
     }
 
     @Override
+    // Map a row/column index to a visible cell value.
     public Object getValueAt(int rowIndex, int columnIndex) {
         UserRow u = users.get(rowIndex);
         switch (columnIndex) {

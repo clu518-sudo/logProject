@@ -1,5 +1,7 @@
 import { openDb } from "../db/db.js";
 
+// List all comments for a given article.
+// Logic: join comments/users -> order by created time -> return rows.
 export async function listCommentsForArticle(articleId) {
   const db = openDb();
   try {
@@ -18,6 +20,8 @@ export async function listCommentsForArticle(articleId) {
   }
 }
 
+// Create a new comment and return its id.
+// Logic: insert row -> return lastID.
 export async function createComment({ articleId, authorUserId, parentCommentId, content }) {
   const db = openDb();
   try {
@@ -32,6 +36,8 @@ export async function createComment({ articleId, authorUserId, parentCommentId, 
   }
 }
 
+// Get one comment by id.
+// Logic: query by id -> return row or null.
 export async function getCommentById(id) {
   const db = openDb();
   try {
@@ -42,6 +48,8 @@ export async function getCommentById(id) {
   }
 }
 
+// Delete a comment by id.
+// Logic: run DELETE -> close DB.
 export async function deleteComment(id) {
   const db = openDb();
   try {

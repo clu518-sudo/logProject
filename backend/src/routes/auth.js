@@ -1,19 +1,73 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { randomToken, setCookie, clearCookie, parseCookies } from "../util/http.js";
+import {
+  randomToken,
+  setCookie,
+  clearCookie,
+  parseCookies,
+} from "../util/http.js";
 import { getUserByUsername } from "../services/users.js";
-import { createSession, deleteSessionByToken, getSessionExpiresAt } from "../services/sessions.js";
+import {
+  createSession,
+  deleteSessionByToken,
+  getSessionExpiresAt,
+} from "../services/sessions.js";
 
+// Create a router for auth-related endpoints.
 const router = express.Router();
 
+/**
+ * POST `/api/login`
+ *
+ * Log in a user and set a session cookie (`sid`).
+ *
+ * **Inputs (request body JSON)**
+ * - `username` (string)
+ * - `password` (string)
+ *
+ * **Output (response JSON, 200)**
+ * - Basic user info (id, username, realName, isAdmin, avatar fields)
+ *
+ * **Possible errors**
+ * - 400: missing credentials
+ * - 401: invalid credentials
+ *
+ * **Side effects**
+ * - Creates a DB session row
+ * - Sets `Set-Cookie: sid=...`
+ *
+ * **Logic**
+ * - Validate -> find user -> compare bcrypt hash -> create session -> set cookie -> return user.
+ */
 router.post("/login", async (req, res, next) => {
   try {
     const { username, password } = req.body || {};
-    if (!username || !password) return res.status(400).json({ error: { code: "bad_request", message: "Missing credentials" } });
+    if (!username || !password)
+      return res
+        .status(400)
+        .json({
+          error: { code: "bad_request", message: "Missing credentials" },
+        });
     const user = await getUserByUsername(username.trim());
-    if (!user) return res.status(401).json({ error: { code: "invalid_credentials", message: "Invalid credentials" } });
+    if (!user)
+      return res
+        .status(401)
+        .json({
+          error: {
+            code: "invalid_credentials",
+            message: "Invalid credentials",
+          },
+        });
     const ok = await bcrypt.compare(password, user.password_hash);
-    if (!ok) return res.status(401).json({ error: { code: "invalid_credentials", message: "Invalid credentials" } });
+    if (!ok)
+      return res
+        .status(401)
+        .json({
+          error: {
+            code: "invalid_credentials",
+            message: "Invalid credentials",
+          },
+        });
     const token = randomToken(32);
     const { expires } = await createSession(user.id, token);
     setCookie(res, "sid", token, { httpOnly: true, sameSite: "Lax", expires });
@@ -24,13 +78,31 @@ router.post("/login", async (req, res, next) => {
       isAdmin: !!user.is_admin,
       avatarType: user.avatar_type,
       avatarKey: user.avatar_key,
-      avatarPath: user.avatar_path
+      avatarPath: user.avatar_path,
     });
   } catch (e) {
     return next(e);
   }
 });
 
+/**
+ * POST `/api/logout`
+ *
+ * Log out the current user.
+ *
+ * **Inputs**
+ * - Cookie `sid` (optional)
+ *
+ * **Output**
+ * - 204 No Content
+ *
+ * **Side effects**
+ * - Deletes the session row (if cookie existed)
+ * - Clears `sid` cookie in browser
+ *
+ * **Logic**
+ * - Read cookie -> delete session -> clear cookie -> 204.
+ */
 router.post("/logout", async (req, res, next) => {
   try {
     const token = parseCookies(req).sid;
@@ -42,8 +114,25 @@ router.post("/logout", async (req, res, next) => {
   }
 });
 
+/**
+ * GET `/api/me`
+ *
+ * Fetch the currently logged-in user's profile.
+ *
+ * **Inputs**
+ * - Requires `req.user` set by `attachUser` middleware (cookie-based session).
+ *
+ * **Output (200)**
+ * - User profile fields (id, username, realName, dob, bio, avatar, isAdmin)
+ *
+ * **Errors**
+ * - 401 if not logged in
+ */
 router.get("/me", async (req, res) => {
-  if (!req.user) return res.status(401).json({ error: { code: "unauthenticated", message: "Login required" } });
+  if (!req.user)
+    return res
+      .status(401)
+      .json({ error: { code: "unauthenticated", message: "Login required" } });
   return res.json({
     id: req.user.id,
     username: req.user.username,
@@ -53,9 +142,8 @@ router.get("/me", async (req, res) => {
     avatarType: req.user.avatar_type,
     avatarKey: req.user.avatar_key,
     avatarPath: req.user.avatar_path,
-    isAdmin: !!req.user.is_admin
+    isAdmin: !!req.user.is_admin,
   });
 });
 
 export default router;
-

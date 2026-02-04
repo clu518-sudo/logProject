@@ -26,6 +26,7 @@
   let avatarNonce = Date.now();
   const today = new Date().toISOString().slice(0, 10);
 
+  // When user data changes, sync form fields and refresh avatar cache key.
   $: if ($me) {
     username = $me.username;
     realName = $me.realName || "";
@@ -35,9 +36,12 @@
     avatarNonce = Date.now();
   }
 
+  // Reactive avatar URLs with a cache-busting timestamp.
   $: currentAvatarUrl = $me ? `/api/users/${$me.id}/avatar?ts=${avatarNonce}` : "";
   $: uploadedAvatarUrl = $me && $me.avatarPath ? `${$me.avatarPath}?ts=${avatarNonce}` : "";
 
+  // Save profile fields for the current user.
+  // Logic: validate -> PATCH /api/users/me -> refresh store -> show message.
   async function saveProfile() {
     error = "";
     success = "";
@@ -71,6 +75,8 @@
     }
   }
 
+  // Switch to a predefined avatar.
+  // Logic: PATCH avatarKey -> refresh store -> close modal.
   async function selectPredefinedAvatar(key) {
     error = "";
     success = "";
@@ -91,6 +97,8 @@
     }
   }
 
+  // Switch to the last uploaded avatar image (if any).
+  // Logic: PATCH avatarType=upload -> refresh store -> close modal.
   async function selectUploadedAvatar() {
     error = "";
     success = "";
@@ -111,6 +119,8 @@
     }
   }
 
+  // Upload a new avatar image file.
+  // Logic: call upload API -> refresh store -> update cache key.
   async function upload() {
     error = "";
     success = "";
@@ -130,6 +140,8 @@
     }
   }
 
+  // Delete the current user's account and log them out.
+  // Logic: confirm -> DELETE /api/users/me -> clear store -> redirect.
   async function removeAccount() {
     if (!confirm("Delete your account permanently?")) return;
     await apiFetch("/api/users/me", { method: "DELETE" });
@@ -276,7 +288,7 @@
     height: 100px;
     border-radius: 12px;
     object-fit: cover;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #132860;
   }
 
   .modal-overlay {
@@ -299,7 +311,7 @@
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   }
 
   .modal-header {
@@ -307,7 +319,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #132860;
   }
 
   .modal-header h3 {
@@ -320,7 +332,7 @@
     border: none;
     font-size: 2rem;
     cursor: pointer;
-    color: #6b7280;
+    color: #132860;
     line-height: 1;
     padding: 0;
     width: 32px;
@@ -328,7 +340,7 @@
   }
 
   .close-btn:hover {
-    color: #1f2937;
+    color: #000000;
   }
 
   .modal-body {
@@ -342,7 +354,7 @@
   .avatar-section h4 {
     margin: 0 0 12px 0;
     font-size: 1.1rem;
-    color: #374151;
+    color: #132860;
   }
 
   .avatar-grid {
@@ -353,7 +365,7 @@
 
   .avatar-option-modal {
     border: 3px solid transparent;
-    background: #f9fafb;
+    background: #ffffff;
     border-radius: 12px;
     padding: 12px;
     cursor: pointer;
@@ -365,8 +377,8 @@
   }
 
   .avatar-option-modal:hover:not(:disabled) {
-    border-color: #93c5fd;
-    background: #eff6ff;
+    border-color: #132860;
+    background: rgba(19, 40, 96, 0.15);
     transform: translateY(-2px);
   }
 
@@ -384,12 +396,12 @@
   .avatar-name {
     font-size: 0.85rem;
     font-weight: 500;
-    color: #4b5563;
+    color: #132860;
   }
 
   .upload-area {
-    background: #f9fafb;
-    border: 2px dashed #cbd5e1;
+    background: #ffffff;
+    border: 2px dashed #132860;
     border-radius: 12px;
     padding: 20px;
     text-align: center;

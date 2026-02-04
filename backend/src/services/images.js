@@ -1,5 +1,7 @@
 import { openDb } from "../db/db.js";
 
+// Save an uploaded image record and return its id.
+// Logic: insert row -> return lastID.
 export async function createImage({ ownerUserId, articleId, path, mime }) {
   const db = openDb();
   try {

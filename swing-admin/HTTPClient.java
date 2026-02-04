@@ -26,14 +26,18 @@ public class HTTPClient {
     private final String baseUrl;
     private String cookie = null;
 
+    // Create an HTTP client pointing at the backend base URL.
     public HTTPClient(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
+    // Check if we currently have a session cookie.
     public boolean isLoggedIn() {
         return cookie != null && !cookie.isEmpty();
     }
 
+    // Log in and store the session cookie for future requests.
+    // Logic: POST credentials -> check status -> read Set-Cookie.
     public void login(String username, String password) throws IOException {
         String payload = "{\"username\":\"" + jsonEscape((username == null ? "" : username.trim())) +
                 "\",\"password\":\"" + jsonEscape(password == null ? "" : password) + "\"}";
@@ -51,12 +55,14 @@ public class HTTPClient {
         }
     }
 
+    // Log out and clear local cookie state.
     public void logout() throws IOException {
         HttpURLConnection conn = openConnection("POST", "/api/logout", null);
         conn.getResponseCode(); // fire request
         cookie = null;
     }
 
+    // Fetch the admin user list and parse JSON into rows.
     public List<UserRow> fetchUsers() throws IOException {
         HttpURLConnection conn = openConnection("GET", "/api/users", null);
         int status = conn.getResponseCode();
@@ -67,6 +73,7 @@ public class HTTPClient {
         return parseUsers(body);
     }
 
+    // Download a user's avatar image as raw bytes.
     public byte[] fetchAvatarBytes(int userId) throws IOException {
         HttpURLConnection conn = openConnection("GET", "/api/users/" + userId + "/avatar", null);
         int status = conn.getResponseCode();
@@ -76,6 +83,7 @@ public class HTTPClient {
         return readBytes(getStream(conn));
     }
 
+    // Delete a user by id (admin endpoint).
     public void deleteUser(int userId) throws IOException {
         HttpURLConnection conn = openConnection("DELETE", "/api/users/" + userId, null);
         int status = conn.getResponseCode();
@@ -85,6 +93,8 @@ public class HTTPClient {
         }
     }
 
+    // Open and configure an HttpURLConnection.
+    // Logic: build URL -> set method/timeouts -> attach cookie and content-type.
     private HttpURLConnection openConnection(String method, String path, String contentType) throws IOException {
         URL url = URI.create(baseUrl + path).toURL();
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -100,6 +110,7 @@ public class HTTPClient {
         return conn;
     }
 
+    // Write a UTF-8 request body to the connection.
     private static void writeBody(HttpURLConnection conn, String body) throws IOException {
         conn.setDoOutput(true);
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
@@ -109,12 +120,14 @@ public class HTTPClient {
         }
     }
 
+    // Get input stream, falling back to error stream on failure.
     private static InputStream getStream(HttpURLConnection conn) throws IOException {
         int status = conn.getResponseCode();
         InputStream stream = status >= 400 ? conn.getErrorStream() : conn.getInputStream();
         return stream != null ? stream : new ByteArrayInputStream(new byte[0]);
     }
 
+    // Read the entire stream into a byte array.
     private static byte[] readBytes(InputStream in) throws IOException {
         ByteArrayOutputStream bout = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];
@@ -125,10 +138,12 @@ public class HTTPClient {
         return bout.toByteArray();
     }
 
+    // Read the entire stream into a UTF-8 string.
     private static String readString(InputStream in) throws IOException {
         return new String(readBytes(in), StandardCharsets.UTF_8);
     }
 
+    // Retrieve a response header without case sensitivity.
     private static String getHeaderIgnoreCase(HttpURLConnection conn, String name) {
         for (Map.Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
             String key = entry.getKey();
@@ -142,6 +157,7 @@ public class HTTPClient {
         return null;
     }
 
+    // Escape a string for safe JSON string inclusion.
     private static String jsonEscape(String s) {
         if (s == null) return "";
         StringBuilder sb = new StringBuilder();
@@ -170,6 +186,7 @@ public class HTTPClient {
         return sb.toString();
     }
 
+    // Unescape a JSON string value (very minimal).
     private static String unescapeJsonString(String s) {
         if (s == null) return "";
         StringBuilder sb = new StringBuilder();
@@ -206,6 +223,7 @@ public class HTTPClient {
         return sb.toString();
     }
 
+    // Parse user list from JSON using regex (simple, limited parser).
     private static List<UserRow> parseUsers(String json) {
         List<UserRow> users = new ArrayList<>();
         Matcher m = Pattern.compile("\\{(.*?)\\}", Pattern.DOTALL).matcher(json);
@@ -223,6 +241,7 @@ public class HTTPClient {
         return users;
     }
 
+    // Parse an integer from a regex group or return fallback.
     private static int parseInt(String src, String regex, int fallback) {
         Matcher m = Pattern.compile(regex, Pattern.DOTALL).matcher(src);
         if (m.find()) {
@@ -234,6 +253,7 @@ public class HTTPClient {
         return fallback;
     }
 
+    // Parse a boolean from a regex group or return fallback.
     private static boolean parseBoolean(String src, String regex, boolean fallback) {
         Matcher m = Pattern.compile(regex, Pattern.DOTALL).matcher(src);
         if (m.find()) {
@@ -242,6 +262,7 @@ public class HTTPClient {
         return fallback;
     }
 
+    // Parse a string from a regex group or return empty string.
     private static String parseString(String src, String regex) {
         Matcher m = Pattern.compile(regex, Pattern.DOTALL).matcher(src);
         if (m.find()) {

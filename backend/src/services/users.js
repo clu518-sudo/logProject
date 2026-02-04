@@ -1,5 +1,15 @@
 import { openDb } from "../db/db.js";
 
+/**
+ * Fetch a single user by id.
+ *
+ * **Inputs**: `id` (number)
+ * **Output**: user row (selected profile fields) or `null`
+ * **Side effects**: reads from DB
+ *
+ * **Logic**
+ * - `SELECT ... FROM users WHERE id = ?` -> return row or null.
+ */
 export async function getUserById(id) {
   const db = openDb();
   try {
@@ -13,6 +23,13 @@ export async function getUserById(id) {
   }
 }
 
+/**
+ * Fetch a user by username.
+ *
+ * **Inputs**: `username` (string)
+ * **Output**: full user row (includes password hash) or `null`
+ * **Side effects**: reads from DB
+ */
 export async function getUserByUsername(username) {
   const db = openDb();
   try {
@@ -26,6 +43,16 @@ export async function getUserByUsername(username) {
   }
 }
 
+/**
+ * Create a new user account.
+ *
+ * **Inputs**: object with `username`, `passwordHash`, optional profile fields
+ * **Output**: created user row (via `getUserById`)
+ * **Side effects**: inserts into DB
+ *
+ * **Logic**
+ * - INSERT -> read `lastID` -> fetch full row -> return.
+ */
 export async function createUser({ username, passwordHash, realName, dob, bio, avatarType, avatarKey }) {
   const db = openDb();
   try {
@@ -40,6 +67,16 @@ export async function createUser({ username, passwordHash, realName, dob, bio, a
   }
 }
 
+/**
+ * Update a user's profile fields.
+ *
+ * **Inputs**
+ * - `userId` (number)
+ * - fields object (username, realName, dob, bio, avatarType, avatarKey)
+ *
+ * **Output**: updated user row
+ * **Side effects**: updates DB
+ */
 export async function updateUser(userId, { username, realName, dob, bio, avatarType, avatarKey }) {
   const db = openDb();
   try {
@@ -55,6 +92,16 @@ export async function updateUser(userId, { username, realName, dob, bio, avatarT
   }
 }
 
+/**
+ * Set user's avatar to an uploaded image path.
+ *
+ * **Inputs**
+ * - `userId` (number)
+ * - `avatarPath` (string): URL-ish path like `/uploads/avatars/<file>`
+ *
+ * **Output**: updated user row
+ * **Side effects**: updates DB
+ */
 export async function updateUserAvatarPath(userId, avatarPath) {
   const db = openDb();
   try {
@@ -70,6 +117,13 @@ export async function updateUserAvatarPath(userId, avatarPath) {
   }
 }
 
+/**
+ * Check whether a username is already taken.
+ *
+ * **Inputs**: `username` (string)
+ * **Output**: boolean
+ * **Side effects**: reads DB
+ */
 export async function usernameExists(username) {
   const db = openDb();
   try {
@@ -80,6 +134,13 @@ export async function usernameExists(username) {
   }
 }
 
+/**
+ * Delete a user by id.
+ *
+ * **Inputs**: `userId` (number)
+ * **Output**: none
+ * **Side effects**: deletes from DB
+ */
 export async function deleteUserById(userId) {
   const db = openDb();
   try {
@@ -89,6 +150,16 @@ export async function deleteUserById(userId) {
   }
 }
 
+/**
+ * List users plus their article counts (admin screen).
+ *
+ * **Inputs**: none
+ * **Output**: array of rows with `articleCount`
+ * **Side effects**: reads DB
+ *
+ * **Logic**
+ * - LEFT JOIN articles -> COUNT -> GROUP BY user id.
+ */
 export async function listUsersWithCounts() {
   const db = openDb();
   try {

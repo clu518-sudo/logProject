@@ -1,5 +1,7 @@
 import { openDb } from "../db/db.js";
 
+// List articles with optional search and sorting.
+// Logic: build WHERE clauses -> choose ORDER BY -> query DB -> return rows.
 export async function listArticles({ q, sort, order, mineUserId }) {
   const db = openDb();
   const where = [];
@@ -45,6 +47,8 @@ export async function listArticles({ q, sort, order, mineUserId }) {
   }
 }
 
+// Fetch a single article with author info.
+// Logic: join articles/users -> return row or null.
 export async function getArticleById(id) {
   const db = openDb();
   try {
@@ -62,6 +66,8 @@ export async function getArticleById(id) {
   }
 }
 
+// Insert a new article and return the full row.
+// Logic: insert -> fetch by lastID -> return.
 export async function createArticle({
   authorUserId,
   title,
@@ -81,6 +87,8 @@ export async function createArticle({
   }
 }
 
+// Update an existing article and return the new row.
+// Logic: update fields -> fetch by id -> return.
 export async function updateArticle(id, { title, contentHtml, isPublished }) {
   const db = openDb();
   try {
@@ -96,6 +104,8 @@ export async function updateArticle(id, { title, contentHtml, isPublished }) {
   }
 }
 
+// Update the header image path for an article.
+// Logic: update header path + updated_at -> fetch by id.
 export async function updateHeaderImage(id, headerPath) {
   const db = openDb();
   try {
@@ -109,6 +119,8 @@ export async function updateHeaderImage(id, headerPath) {
   }
 }
 
+// Delete an article by id.
+// Logic: run DELETE statement -> close DB.
 export async function deleteArticle(id) {
   const db = openDb();
   try {

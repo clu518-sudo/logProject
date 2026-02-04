@@ -4,8 +4,11 @@ import { isNonEmptyString } from "../util/validation.js";
 import { createComment, deleteComment, getCommentById, listCommentsForArticle } from "../services/comments.js";
 import { getArticleById } from "../services/articles.js";
 
+// Create a router for comment-related endpoints.
 const router = express.Router();
 
+// List all comments for a specific article.
+// Logic: verify article exists -> load comments -> map fields -> return list.
 router.get("/articles/:id/comments", async (req, res, next) => {
   try {
     const article = await getArticleById(req.params.id);
@@ -31,6 +34,8 @@ router.get("/articles/:id/comments", async (req, res, next) => {
   }
 });
 
+// Create a new comment for an article.
+// Logic: validate content -> verify article -> insert comment -> return new id.
 router.post("/articles/:id/comments", requireAuth, async (req, res, next) => {
   try {
     const { content, parentCommentId } = req.body || {};
@@ -51,6 +56,8 @@ router.post("/articles/:id/comments", requireAuth, async (req, res, next) => {
   }
 });
 
+// Delete a comment (author, article author, or admin only).
+// Logic: fetch comment -> check permissions -> delete -> return 204.
 router.delete("/comments/:id", requireAuth, async (req, res, next) => {
   try {
     const comment = await getCommentById(req.params.id);

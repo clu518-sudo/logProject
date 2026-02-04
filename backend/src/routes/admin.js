@@ -3,8 +3,11 @@ import { requireAdmin } from "../middleware/auth.js";
 import { listUsersWithCounts, deleteUserById } from "../services/users.js";
 import { deleteSessionsForUser } from "../services/sessions.js";
 
+// Create a router for admin-only endpoints.
 const router = express.Router();
 
+// List all users with extra admin-only fields.
+// Logic: require admin -> fetch list with counts -> map fields -> return JSON.
 router.get("/users", requireAdmin, async (req, res, next) => {
   try {
     const users = await listUsersWithCounts();
@@ -25,6 +28,8 @@ router.get("/users", requireAdmin, async (req, res, next) => {
   }
 });
 
+// Delete a user by id (admin only).
+// Logic: clear sessions -> delete user -> return 204.
 router.delete("/users/:id", requireAdmin, async (req, res, next) => {
   try {
     const userId = Number(req.params.id);

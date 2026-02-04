@@ -28,6 +28,8 @@
   const today = new Date().toISOString().slice(0, 10);
 
   let timer;
+  // Debounced username availability check.
+  // Logic: clear previous timer -> wait 300ms -> call API -> set availability.
   function checkAvailability() {
     clearTimeout(timer);
     timer = setTimeout(async () => {
@@ -40,6 +42,8 @@
     }, 300);
   }
 
+  // Handle user-selected avatar file and create a preview.
+  // Logic: read file -> FileReader -> set preview data URL.
   function handleFileSelect(e) {
     const file = e.target.files[0];
     if (file) {
@@ -52,16 +56,20 @@
     }
   }
 
+  // Switch to predefined avatar mode and clear custom selection.
   function selectPredefinedMode() {
     avatarMode = "predefined";
     customAvatarFile = null;
     customAvatarPreview = null;
   }
 
+  // Switch to custom avatar upload mode.
   function selectCustomMode() {
     avatarMode = "custom";
   }
 
+  // Validate form and create account (with optional avatar upload).
+  // Logic: validate fields -> create user -> if custom, login + upload -> go to login page.
   async function submit() {
     error = "";
     const normalizedUsername = normalizeUsername(username);
@@ -249,8 +257,8 @@
 <style>
   .mode-btn {
     padding: 8px 16px;
-    border: 2px solid #e5e7eb;
-    background: #fff;
+    border: 2px solid #132860;
+    background: #ffffff;
     border-radius: 8px;
     cursor: pointer;
     font-weight: 500;
@@ -258,21 +266,21 @@
   }
 
   .mode-btn:hover {
-    border-color: #93c5fd;
-    background: #eff6ff;
+    border-color: #132860;
+    background: rgba(19, 40, 96, 0.15);
   }
 
   .mode-btn.active {
-    border-color: #2563eb;
-    background: #dbeafe;
-    color: #1e40af;
+    border-color: #132860;
+    background: rgba(19, 40, 96, 0.2);
+    color: #000000;
   }
 
   .custom-upload-area {
     padding: 20px;
-    border: 2px dashed #cbd5e1;
+    border: 2px dashed #132860;
     border-radius: 12px;
-    background: #f9fafb;
+    background: #ffffff;
   }
 
   .custom-preview {
@@ -280,7 +288,7 @@
     height: 120px;
     border-radius: 12px;
     object-fit: cover;
-    border: 2px solid #e5e7eb;
+    border: 2px solid #132860;
   }
 </style>
 

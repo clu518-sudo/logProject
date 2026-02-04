@@ -1,6 +1,8 @@
 <script>
   export let article;
 
+  // Normalize header image path for both absolute URLs and local uploads.
+  // Logic: empty -> "", absolute -> keep, else ensure leading slash.
   function normalizePath(p) {
     if (!p) return "";
     // allow absolute URLs
@@ -9,8 +11,10 @@
     return p.startsWith("/") ? p : `/${p}`;
   }
 
+  // Reactive values derived from the current article.
   $: rawHeaderPath = article?.headerImagePath || article?.header_image_path || "";
   $: headerPath = normalizePath(rawHeaderPath);
+  // Cache-busting query param to refresh image when article updates.
   $: cacheKey = article?.updatedAt || article?.createdAt || Date.now();
   $: coverUrl = headerPath ? `${headerPath}?ts=${encodeURIComponent(cacheKey)}` : "";
   $: authorAvatarUrl = article ? `/api/users/${article.author.id}/avatar` : "";
@@ -39,7 +43,7 @@
     --cover-stagger: 0.15s;
     --text-timing: 0.75s;
     --text-ease: cubic-bezier(0.38, 0.26, 0.05, 1.07);
-    --highlight: white;
+    --highlight: #132860;
   }
 
   .card {
@@ -54,10 +58,10 @@
     /* Let text scale based on this card's size */
     container-type: inline-size;
     box-shadow:
-      rgba(255, 255, 255, 0.3) 0 5vw 6vw -8vw,
-      rgba(255, 255, 255, 0) 0 4.5vw 5vw -6vw,
-      rgba(50, 50, 80, 0.5) 0px 4vw 8vw -2vw,
-      rgba(0, 0, 0, 0.8) 0px 4vw 5vw -3vw;
+      rgba(19, 40, 96, 0.35) 0 5vw 6vw -8vw,
+      rgba(19, 40, 96, 0) 0 4.5vw 5vw -6vw,
+      rgba(0, 0, 0, 0.7) 0px 4vw 8vw -2vw,
+      rgba(0, 0, 0, 0.9) 0px 4vw 5vw -3vw;
     transition: box-shadow 1s var(--cover-ease);
   }
 
@@ -72,7 +76,7 @@
     height: 50%;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     position: absolute;
     transform-origin: left;
     transform: scaleX(0);
@@ -88,10 +92,10 @@
   .card:hover,
   .card:focus-within {
     box-shadow:
-      white 0 5vw 6vw -9vw,
+      #132860 0 5vw 6vw -9vw,
       var(--highlight) 0 5.5vw 5vw -7.5vw,
-      rgba(50, 50, 80, 0.5) 0px 4vw 8vw -2vw,
-      rgba(0, 0, 0, 0.8) 0px 4vw 5vw -3vw;
+      rgba(0, 0, 0, 0.7) 0px 4vw 8vw -2vw,
+      rgba(0, 0, 0, 0.9) 0px 4vw 5vw -3vw;
   }
 
   .card:hover::before,
@@ -120,11 +124,11 @@
   }
 
   .card:nth-of-type(1) {
-    --highlight: coral;
+    --highlight: #132860;
   }
 
   .card:nth-of-type(2) {
-    --highlight: #56ffe5;
+    --highlight: #132860;
   }
 
   .cover-bg {
@@ -137,7 +141,7 @@
   }
 
   .cover-bg {
-    background-image: var(--card-cover, linear-gradient(135deg, #3b4154, #1f2430));
+    background-image: var(--card-cover, linear-gradient(135deg, #132860, #000000));
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -199,8 +203,8 @@
     border-radius: 50%;
     object-fit: cover;
     flex: 0 0 auto;
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(19, 40, 96, 0.6);
+    background: rgba(0, 0, 0, 0.2);
     opacity: 0;
     transform: translateY(20px);
     transition:
@@ -214,7 +218,7 @@
     width: fit-content;
     padding: 2px 8px;
     border-radius: 999px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.6);
     color: var(--highlight);
     font-weight: 600;
     letter-spacing: 0.3px;
@@ -225,7 +229,7 @@
     width: fit-content;
     padding: clamp(5px, 1.8cqw, 8px) clamp(10px, 3.6cqw, 14px);
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(19, 40, 96, 0.3);
     color: inherit;
     text-decoration: none;
     font-weight: 600;
