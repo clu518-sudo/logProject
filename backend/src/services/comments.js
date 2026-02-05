@@ -1,4 +1,5 @@
 import { openDb } from "../db/db.js";
+import { nowNzSqlite } from "../util/time.js";
 
 // List all comments for a given article.
 // Logic: join comments/users -> order by created time -> return rows.
@@ -26,9 +27,9 @@ export async function createComment({ articleId, authorUserId, parentCommentId, 
   const db = openDb();
   try {
     const result = await db.run(
-      `INSERT INTO comments (article_id, author_user_id, parent_comment_id, content)
-       VALUES (?,?,?,?)`,
-      [articleId, authorUserId, parentCommentId, content]
+      `INSERT INTO comments (article_id, author_user_id, parent_comment_id, content, created_at)
+       VALUES (?,?,?,?,?)`,
+      [articleId, authorUserId, parentCommentId, content, nowNzSqlite()]
     );
     return result.lastID;
   } finally {

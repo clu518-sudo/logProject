@@ -1,4 +1,5 @@
 import { openDb } from "../db/db.js";
+import { nowNzSqlite } from "../util/time.js";
 
 // List articles with optional search and sorting.
 // Logic: build WHERE clauses -> choose ORDER BY -> query DB -> return rows.
@@ -76,10 +77,11 @@ export async function createArticle({
 }) {
   const db = openDb();
   try {
+    const nowNz = nowNzSqlite();
     const result = await db.run(
-      `INSERT INTO articles (author_user_id, title, content_html, is_published)
-       VALUES (?,?,?,?)`,
-      [authorUserId, title, contentHtml, isPublished ? 1 : 0]
+      `INSERT INTO articles (author_user_id, title, content_html, is_published, created_at, updated_at)
+       VALUES (?,?,?,?,?,?)`,
+      [authorUserId, title, contentHtml, isPublished ? 1 : 0, nowNz, nowNz]
     );
     return await getArticleById(result.lastID);
   } finally {
@@ -94,9 +96,9 @@ export async function updateArticle(id, { title, contentHtml, isPublished }) {
   try {
     await db.run(
       `UPDATE articles
-       SET title = ?, content_html = ?, is_published = ?, updated_at = datetime('now')
+       SET title = ?, content_html = ?, is_published = ?, updated_at = ?
        WHERE id = ?`,
-      [title, contentHtml, isPublished ? 1 : 0, id]
+      [title, contentHtml, isPublished ? 1 : 0, nowNzSqlite(), id]
     );
     return await getArticleById(id);
   } finally {
@@ -110,8 +112,8 @@ export async function updateHeaderImage(id, headerPath) {
   const db = openDb();
   try {
     await db.run(
-      `UPDATE articles SET header_image_path = ?, updated_at = datetime('now') WHERE id = ?`,
-      [headerPath, id]
+      `UPDATE articles SET header_image_path = ?, updated_at = ? WHERE id = ?`,
+      [headerPath, nowNzSqlite(), id]
     );
     return await getArticleById(id);
   } finally {

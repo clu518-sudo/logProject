@@ -21,8 +21,8 @@ CREATE TABLE users (
   avatar_key TEXT,
   avatar_path TEXT,
   is_admin INTEGER NOT NULL DEFAULT 0 CHECK (is_admin IN (0,1)),
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 
 CREATE TABLE articles (
@@ -32,8 +32,8 @@ CREATE TABLE articles (
   content_html TEXT NOT NULL DEFAULT '',
   header_image_path TEXT,
   is_published INTEGER NOT NULL DEFAULT 1 CHECK (is_published IN (0,1)),
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -43,7 +43,7 @@ CREATE TABLE comments (
   author_user_id INTEGER NOT NULL,
   parent_comment_id INTEGER,
   content TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE,
   FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (parent_comment_id) REFERENCES comments(id) ON DELETE CASCADE
@@ -55,7 +55,7 @@ CREATE TABLE images (
   article_id INTEGER,
   path TEXT NOT NULL,
   mime TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE SET NULL
 );
@@ -65,7 +65,7 @@ CREATE TABLE sessions (
   token_hash TEXT NOT NULL UNIQUE,
   user_id INTEGER NOT NULL,
   expires_at TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

@@ -1,4 +1,5 @@
 import { openDb } from "../db/db.js";
+import { nowNzSqlite } from "../util/time.js";
 
 /**
  * Fetch a single user by id.
@@ -56,10 +57,11 @@ export async function getUserByUsername(username) {
 export async function createUser({ username, passwordHash, realName, dob, bio, avatarType, avatarKey }) {
   const db = openDb();
   try {
+    const nowNz = nowNzSqlite();
     const result = await db.run(
-      `INSERT INTO users (username, password_hash, real_name, dob, bio, avatar_type, avatar_key)
-       VALUES (?,?,?,?,?,?,?)`,
-      [username, passwordHash, realName, dob, bio, avatarType, avatarKey]
+      `INSERT INTO users (username, password_hash, real_name, dob, bio, avatar_type, avatar_key, created_at, updated_at)
+       VALUES (?,?,?,?,?,?,?,?,?)`,
+      [username, passwordHash, realName, dob, bio, avatarType, avatarKey, nowNz, nowNz]
     );
     return await getUserById(result.lastID);
   } finally {
@@ -82,9 +84,9 @@ export async function updateUser(userId, { username, realName, dob, bio, avatarT
   try {
     await db.run(
       `UPDATE users
-       SET username = ?, real_name = ?, dob = ?, bio = ?, avatar_type = ?, avatar_key = ?, updated_at = datetime('now')
+       SET username = ?, real_name = ?, dob = ?, bio = ?, avatar_type = ?, avatar_key = ?, updated_at = ?
        WHERE id = ?`,
-      [username, realName, dob, bio, avatarType, avatarKey, userId]
+      [username, realName, dob, bio, avatarType, avatarKey, nowNzSqlite(), userId]
     );
     return await getUserById(userId);
   } finally {
@@ -107,9 +109,9 @@ export async function updateUserAvatarPath(userId, avatarPath) {
   try {
     await db.run(
       `UPDATE users
-       SET avatar_type = 'upload', avatar_path = ?, updated_at = datetime('now')
+       SET avatar_type = 'upload', avatar_path = ?, updated_at = ?
        WHERE id = ?`,
-      [avatarPath, userId]
+      [avatarPath, nowNzSqlite(), userId]
     );
     return await getUserById(userId);
   } finally {

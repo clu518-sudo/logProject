@@ -28,7 +28,7 @@
     loading = true;
     error = "";
     try {
-      const query = new URLSearchParams();
+      const query = new URLSearchParams(); // #explained it in report
       if (q) query.set("q", q);
       query.set("sort", sort);
       query.set("order", order);
@@ -50,15 +50,24 @@
     <div class="row filter-panel">
       <div class="field search-field" style="flex: 2;">
         <label for="search-input">Search</label>
+        <!-- 
+          Animated search input with rotating gradient border effect
+          
+          Original Authors:
+          Copyright © 2026 Lakshay Gupta (Lakshay-art)
+          Copyright © 2026 Pankaj Meharchandani (Pankaj-Meharchandani)
+          
+          Licensed under MIT License
+          Modified: Adapted colors, integrated with Svelte, adjusted animations
+        -->
         <div class="search-shell">
-          <div class="search-grid"></div>
           <div class="search-pod">
             <div class="search-glow"></div>
-            <div class="search-darkBorderBg"></div>
-            <div class="search-darkBorderBg"></div>
-            <div class="search-darkBorderBg"></div>
-            <div class="search-white"></div>
-            <div class="search-border"></div>
+            <div class="search-darkBorderBg"></div> <!-- Neon-style glow -->
+            <div class="search-darkBorderBg"></div> <!-- Neon-style glow -->
+            <div class="search-darkBorderBg"></div> <!-- Neon-style glow -->
+            <div class="search-white"></div> <!-- Neon-style glow -->
+            <div class="search-border"></div> <!-- Neon-style glow -->
             <div class="search-main">
               <input
                 id="search-input"
@@ -67,14 +76,14 @@
                 type="text"
                 placeholder="Search title or content"
                 bind:value={q}
+                on:keydown={(e)=>{
+                  if (e.key === "Enter") load();
+                }}
               />
-              <div class="search-pink-mask"></div>
               <div class="search-filterBorder"></div>
               <button
                 class="search-filter-icon"
                 type="button"
-                aria-pressed={showFilters}
-                aria-label={showFilters ? "Hide filters" : "Show filters"}
                 on:click={() => (showFilters = !showFilters)}
               >
                 <svg
@@ -253,23 +262,6 @@
     position: relative;
     width: 100%;
     font-family: inherit;
-  }
-
-  .search-pink-mask {
-    pointer-events: none;
-    width: 30px;
-    height: 20px;
-    position: absolute;
-    background: #132860;
-    top: 10px;
-    left: 10px;
-    filter: blur(20px);
-    opacity: 0.8;
-    transition: all 2s;
-  }
-
-  .search-main:hover > .search-pink-mask {
-    opacity: 0;
   }
 
   .search-white {

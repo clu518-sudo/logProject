@@ -1,5 +1,6 @@
 import { openDb } from "../db/db.js";
 import { sha256Hex } from "../util/http.js";
+import { formatNzSqlite, nowNzSqlite } from "../util/time.js";
 
 // Number of days before a session expires.
 const SESSION_DAYS = 7;
@@ -46,9 +47,10 @@ export async function createSession(userId, rawToken) {
   const tokenHash = sha256Hex(rawToken);
   const expires = getSessionExpiresAt();
   try {
+    const nowNz = nowNzSqlite();
     await db.run(
-      "INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?,?,?)",
-      [tokenHash, userId, expires.toISOString()]
+      "INSERT INTO sessions (token_hash, user_id, expires_at, created_at) VALUES (?,?,?,?)",
+      [tokenHash, userId, formatNzSqlite(expires), nowNz]
     );
     return { tokenHash, expires };
   } finally {
@@ -71,8 +73,8 @@ export async function getSessionByTokenHash(rawToken) {
   const tokenHash = sha256Hex(rawToken);
   try {
     const row = await db.get(
-      "SELECT * FROM sessions WHERE token_hash = ? AND expires_at > datetime('now')",
-      [tokenHash]
+      "SELECT * FROM sessions WHERE token_hash = ? AND expires_at > ?",
+      [tokenHash, nowNzSqlite()]
     );
     return row || null;
   } finally {
