@@ -110,13 +110,25 @@
       if (id) {
         await apiFetch(`/api/articles/${id}`, {
           method: "PATCH",
-          body: JSON.stringify({ title: cleanTitle, contentHtml, isPublished: isPublished === "true" })
+          body: JSON.stringify({
+            title: cleanTitle,
+            contentHtml,
+            isPublished: isPublished === "true",
+            // If there's no header image currently, request backend AI generation.
+            generateHeaderImage: !headerImagePath,
+          })
         });
         await goto("/");
       } else {
         const created = await apiFetch("/api/articles", {
           method: "POST",
-          body: JSON.stringify({ title: cleanTitle, contentHtml, isPublished: isPublished === "true" })
+          body: JSON.stringify({
+            title: cleanTitle,
+            contentHtml,
+            isPublished: isPublished === "true",
+            // Only generate an AI header if the user didn't select a header file.
+            generateHeaderImage: !headerFile,
+          })
         });
 
         // If a header file was selected while creating, upload it right after creation.

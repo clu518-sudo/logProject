@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { fly } from "svelte/transition";
   import ArticleCard from "$lib/components/ArticleCard.svelte";
   import { apiFetch } from "$lib/api.js";
@@ -13,6 +13,53 @@
   let error = "";
   let loading = false;
   let showFilters = false;
+  let refreshTimer;
+  let es;
+
+  function getHeaderStatus(a) {
+    return a?.headerImageStatus || a?.header_image_status || "none";
+  }
+
+  function anyGenerating(list) {
+    return (list || []).some((a) => getHeaderStatus(a) === "generating");
+  }
+
+  function stopRealtime() {
+    if (es) {
+      es.close();
+      es = null;
+    }
+  }
+
+  function startRealtime() {
+    stopRealtime();
+    try {
+      const query = new URLSearchParams();
+      if (mine === "true") query.set("mine", "true");
+      es = new EventSource(`/api/articles/events?${query.toString()}`);
+      es.addEventListener("article", (e) => {
+        try {
+          const payload = JSON.parse(e.data || "{}");
+          if (
+            payload?.headerImageStatus === "ready" ||
+            payload?.headerImageStatus === "failed" ||
+            payload?.headerImageStatus === "none"
+          ) {
+            // Only refresh when generation finishes (or gets cleared/failed).
+            load();
+          }
+        } catch {
+          // ignore
+        }
+      });
+      // If realtime fails (network/proxy), fall back to polling.
+      es.onerror = () => {
+        stopRealtime();
+      };
+    } catch {
+      // ignore and fall back to polling
+    }
+  }
 
   /**
    * Load articles based on the current filter state (search/sort/mine).
@@ -34,6 +81,15 @@
       query.set("order", order);
       if (mine === "true") query.set("mine", "true");
       articles = await apiFetch(`/api/articles?${query.toString()}`);
+
+      // Prefer realtime updates; fallback to polling only when needed.
+      if (refreshTimer) clearTimeout(refreshTimer);
+      startRealtime();
+      if (anyGenerating(articles) && !es) {
+        refreshTimer = setTimeout(() => {
+          if (!loading && document.visibilityState !== "hidden") load();
+        }, 4000);
+      }
     } catch (e) {
       error = e.message;
     } finally {
@@ -42,6 +98,11 @@
   }
 
   onMount(load);
+
+  onDestroy(() => {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    stopRealtime();
+  });
 </script>
 
 <div class="container">
@@ -206,15 +267,6 @@
     box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.4);
     align-items: center;
     color: #ffffff;
-  }
-
-  .search-grid {
-    position: absolute;
-    inset: -18px 0 -18px 0;
-    background-image: none;
-    z-index: -2;
-    opacity: 0.25;
-    filter: blur(1px);
   }
 
   .search-pod {

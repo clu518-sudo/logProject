@@ -31,6 +31,7 @@ CREATE TABLE articles (
   title TEXT NOT NULL,
   content_html TEXT NOT NULL DEFAULT '',
   header_image_path TEXT,
+  header_image_status TEXT NOT NULL DEFAULT 'none' CHECK (header_image_status IN ('none','generating','ready','failed')),
   is_published INTEGER NOT NULL DEFAULT 1 CHECK (is_published IN (0,1)),
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),

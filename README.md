@@ -5,6 +5,7 @@
 Team: **Team Placeholder**
 
 ## Assumptions
+
 - SQLite is acceptable as the embedded SQL database.
 - TinyMCE is loaded via CDN (no API key) to keep dependencies minimal.
 - Draft articles are visible only in "My articles" and to their author/admin.
@@ -13,6 +14,7 @@ Team: **Team Placeholder**
 - Maven is available for building the Swing admin app.
 
 ## Project Structure
+
 ```
 /
   backend/
@@ -22,7 +24,9 @@ Team: **Team Placeholder**
 ```
 
 ## Demo Accounts
+
 All demo accounts use the same password:
+
 - **Password:** `Password123!`
 - `alice` (user)
 - `bob` (user)
@@ -31,9 +35,11 @@ All demo accounts use the same password:
 ## Setup & Run
 
 ### 1) Database
+
 The backend auto-initializes the SQLite DB from `db/db-init.sql` on first run.
 
 If you want to force re-init:
+
 ```
 cd backend
 npm install
@@ -41,30 +47,37 @@ npm run init-db
 ```
 
 ### 2) Backend (Node + Express)
+
 ```
 cd backend
 npm install
 npm run start
 ```
+
 Runs on `http://localhost:3001`.
 
 ### 3) Frontend (Svelte + Vite)
+
 ```
 cd frontend
 npm install
 npm run dev
 ```
+
 Runs on `http://localhost:5173` (Vite proxy to backend `/api` + `/uploads`).
 
 ### 4) Swing Admin (Java)
+
 ```
 cd swing-admin
 mvn -q -e -DskipTests package
 java -jar target/swing-admin-1.0.0.jar
 ```
+
 Log in using the **admin** account above.
 
 ## Features / Pages
+
 - **Register**: live username availability check, password confirmation, predefined avatar selection.
 - **Login/Logout**: session cookie auth.
 - **Profile**: edit username/real name/dob/bio, choose predefined avatar, upload avatar, delete account.
@@ -75,14 +88,18 @@ Log in using the **admin** account above.
 - **Responsive layout**: tested for mobile/tablet/desktop widths.
 
 ## Custom Feature
+
 **Draft vs Published** for articles:
+
 - Drafts are visible only to the author/admin.
 - Published articles appear in the public list.
 
 ## REST API Documentation
+
 All responses are JSON (except images). Uses cookie session `sid`.
 
 ### Auth
+
 - `POST /api/login`
   - Body: `{ "username": "...", "password": "..." }`
   - 200: `{ id, username, realName, isAdmin, avatarType, avatarKey, avatarPath }`
@@ -94,10 +111,12 @@ All responses are JSON (except images). Uses cookie session `sid`.
   - 401: not logged in
 
 ### Username availability
+
 - `GET /api/users/exists?username=...`
   - 200: `{ "available": true|false }`
 
 ### Users (self-service)
+
 - `POST /api/users` (register)
   - Body: `{ username, password, realName, dob, bio, avatarKey }`
   - 201: created user profile
@@ -111,6 +130,7 @@ All responses are JSON (except images). Uses cookie session `sid`.
   - Returns predefined SVG or uploaded image
 
 ### Articles
+
 - `GET /api/articles`
   - Query: `q`, `sort=title|username|date`, `order=asc|desc`, `mine=true`
 - `POST /api/articles` (auth required)
@@ -127,6 +147,7 @@ All responses are JSON (except images). Uses cookie session `sid`.
   - returns `{ url }` for TinyMCE
 
 ### Comments
+
 - `GET /api/articles/:id/comments`
   - Flat list with `parentCommentId` for nesting
 - `POST /api/articles/:id/comments` (auth required)
@@ -135,15 +156,16 @@ All responses are JSON (except images). Uses cookie session `sid`.
   - Comment author OR article author OR admin
 
 ### Admin (Swing)
+
 - `GET /api/users` (admin only)
   - includes `articleCount`
 - `DELETE /api/users/:id` (admin only)
   - 204 on success
 
 ## Swing Admin Usage
+
 - Login with admin credentials.
 - Users table lists all users and article counts.
 - Select a row to see centered avatar thumbnail.
 - Delete selected user (admin accounts are protected from deletion in UI).
 - All network calls run in background (`SwingWorker`) to avoid freezing.
-

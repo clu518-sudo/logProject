@@ -9,8 +9,11 @@ import {
   listArticles,
   updateArticle,
   updateHeaderImage,
+  updateHeaderImageStatus,
 } from "../services/articles.js";
 import { createImage } from "../services/images.js";
+import { startAiHeaderImageGeneration } from "../services/article_header_image_ai.js";
+import { articleEvents } from "../services/article_events.js";
 
 // Create a router for article-related endpoints.
 const router = express.Router();
@@ -24,11 +27,9 @@ router.get("/articles", async (req, res, next) => {
   try {
     const mine = req.query.mine === "true";
     if (mine && !req.user)
-      return res
-        .status(401)
-        .json({
-          error: { code: "unauthenticated", message: "Login required" },
-        });
+      return res.status(401).json({
+        error: { code: "unauthenticated", message: "Login required" },
+      });
     const articles = await listArticles({
       q: req.query.q || "",
       sort: req.query.sort || "date",
@@ -43,6 +44,7 @@ router.get("/articles", async (req, res, next) => {
         updatedAt: a.updated_at,
         isPublished: !!a.is_published,
         headerImagePath: a.header_image_path,
+        headerImageStatus: a.header_image_status || "none",
         author: {
           id: a.author_id,
           username: a.author_username,
@@ -57,11 +59,55 @@ router.get("/articles", async (req, res, next) => {
   }
 });
 
+// Server-Sent Events stream for article updates (header image generation).
+// Logic: keep connection open -> push events -> client reloads when needed.
+router.get("/articles/events", async (req, res, next) => {
+  try {
+    const mine = req.query.mine === "true";
+    if (mine && !req.user) {
+      return res.status(401).json({
+        error: { code: "unauthenticated", message: "Login required" },
+      });
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    // Send an initial comment so proxies establish the stream.
+    res.write(": ok\n\n");
+
+    const send = (payload) => {
+      res.write(`event: article\n`);
+      res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    };
+
+    const onUpdated = (ev) => {
+      if (!ev) return;
+      if (mine) {
+        if (req.user?.is_admin) return send(ev);
+        if (ev.authorUserId !== req.user?.id) return;
+        return send(ev);
+      }
+      // Public stream: only published article updates.
+      if (!ev.isPublished) return;
+      return send(ev);
+    };
+
+    articleEvents.on("article.updated", onUpdated);
+
+    req.on("close", () => {
+      articleEvents.off("article.updated", onUpdated);
+    });
+  } catch (e) {
+    return next(e);
+  }
+});
+
 // Create a new article for the logged-in user.
 // Logic: validate title -> create record -> return created article.
 router.post("/articles", requireAuth, async (req, res, next) => {
   try {
-    const { title, contentHtml, isPublished } = req.body || {};
+    const { title, contentHtml, isPublished, generateHeaderImage } = req.body || {};
     if (!isNonEmptyString(title, 200))
       return res
         .status(400)
@@ -72,7 +118,13 @@ router.post("/articles", requireAuth, async (req, res, next) => {
       contentHtml: (contentHtml ?? "").trim(),
       isPublished: isPublished !== false,
     });
-    return res.status(201).json(article);
+    // If the client indicates no header image was uploaded, start AI generation in the background.
+    if (generateHeaderImage !== false && !article.header_image_path) {
+      await updateHeaderImageStatus(article.id, "generating");
+      startAiHeaderImageGeneration(article.id);
+    }
+    const refreshed = await getArticleById(article.id);
+    return res.status(201).json(refreshed);
   } catch (e) {
     return next(e);
   }
@@ -89,11 +141,9 @@ router.get("/articles/:id", async (req, res, next) => {
         !req.user ||
         (req.user.id !== article.author_user_id && !req.user.is_admin)
       ) {
-        return res
-          .status(403)
-          .json({
-            error: { code: "forbidden", message: "Draft not accessible" },
-          });
+        return res.status(403).json({
+          error: { code: "forbidden", message: "Draft not accessible" },
+        });
       }
     }
     return res.json({
@@ -101,6 +151,7 @@ router.get("/articles/:id", async (req, res, next) => {
       title: article.title,
       contentHtml: article.content_html,
       headerImagePath: article.header_image_path,
+      headerImageStatus: article.header_image_status || "none",
       isPublished: !!article.is_published,
       createdAt: article.created_at,
       updatedAt: article.updated_at,
@@ -129,7 +180,7 @@ router.patch("/articles/:id", requireAuth, async (req, res, next) => {
         .status(403)
         .json({ error: { code: "forbidden", message: "Not allowed" } });
     }
-    const { title, contentHtml, isPublished } = req.body || {};
+    const { title, contentHtml, isPublished, generateHeaderImage } = req.body || {};
     if (!isNonEmptyString(title ?? article.title, 200)) {
       return res
         .status(400)
@@ -141,6 +192,15 @@ router.patch("/articles/:id", requireAuth, async (req, res, next) => {
       isPublished:
         isPublished === undefined ? !!article.is_published : isPublished,
     });
+    if (
+      generateHeaderImage === true &&
+      !updated.header_image_path &&
+      updated.header_image_status !== "generating"
+    ) {
+      await updateHeaderImageStatus(updated.id, "generating");
+      startAiHeaderImageGeneration(updated.id);
+      return res.json(await getArticleById(updated.id));
+    }
     return res.json(updated);
   } catch (e) {
     return next(e);

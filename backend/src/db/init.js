@@ -11,6 +11,7 @@ export async function initDbIfNeeded() {
   if (!exists) {
     await initDbForce();
   }
+  await ensureArticleHeaderImageStatusColumn();
   await ensureHashedPasswords();
 }
 
@@ -46,6 +47,31 @@ async function ensureHashedPasswords() {
         user.id,
       ]);
     }
+  } finally {
+    await db.close();
+  }
+}
+
+// Ensure the articles table supports AI header image generation status.
+// Logic: check PRAGMA table_info -> ALTER TABLE if missing -> backfill ready status.
+async function ensureArticleHeaderImageStatusColumn() {
+  const db = openDb();
+  try {
+    const cols = await db.all("PRAGMA table_info(articles)");
+    const has = cols?.some((c) => c?.name === "header_image_status");
+    if (!has) {
+      await db.run(
+        "ALTER TABLE articles ADD COLUMN header_image_status TEXT NOT NULL DEFAULT 'none'"
+      );
+    }
+    // Backfill: if an article already has a header image path, mark it ready.
+    await db.run(
+      `UPDATE articles
+       SET header_image_status = 'ready'
+       WHERE header_image_path IS NOT NULL
+         AND header_image_path <> ''
+         AND (header_image_status IS NULL OR header_image_status = 'none')`
+    );
   } finally {
     await db.close();
   }

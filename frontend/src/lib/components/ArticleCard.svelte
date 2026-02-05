@@ -14,6 +14,8 @@
   // Reactive values derived from the current article.
   $: rawHeaderPath = article?.headerImagePath || article?.header_image_path || "";
   $: headerPath = normalizePath(rawHeaderPath);
+  $: headerStatus =
+    article?.headerImageStatus || article?.header_image_status || "none";
   // Cache-busting query param to refresh image when article updates.
   $: cacheKey = article?.updatedAt || article?.createdAt || Date.now();
   $: coverUrl = headerPath ? `${headerPath}?ts=${encodeURIComponent(cacheKey)}` : "";
@@ -29,6 +31,9 @@
       <img src={authorAvatarUrl} alt="{article.author.username}'s avatar" class="author-avatar" />
       <p class="meta">by {article.author.username} · {new Date(article.createdAt).toLocaleString()}</p>
     </div>
+    {#if headerStatus === "generating"}
+      <p class="badge badge-ai">AI generate...</p>
+    {/if}
     {#if !article.isPublished}
       <p class="badge">Draft</p>
     {/if}
@@ -223,6 +228,15 @@
     font-weight: 600;
     letter-spacing: 0.3px;
     text-transform: uppercase;
+    /* Always show status badges (even when card isn't hovered). */
+    opacity: 1;
+    transform: none;
+  }
+
+  .badge-ai {
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
   }
 
   .read-link {

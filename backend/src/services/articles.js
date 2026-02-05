@@ -1,5 +1,6 @@
 import { openDb } from "../db/db.js";
 import { nowNzSqlite } from "../util/time.js";
+import { emitArticleUpdated } from "./article_events.js";
 
 // List articles with optional search and sorting.
 // Logic: build WHERE clauses -> choose ORDER BY -> query DB -> return rows.
@@ -35,6 +36,7 @@ export async function listArticles({ q, sort, order, mineUserId }) {
     return await db.all(
       `SELECT a.id, a.title, a.created_at, a.updated_at, a.is_published,
               a.header_image_path,
+              a.header_image_status,
               u.id AS author_id, u.username AS author_username,
               u.avatar_type AS author_avatar_type, u.avatar_key AS author_avatar_key, u.avatar_path AS author_avatar_path
        FROM articles a
@@ -112,10 +114,35 @@ export async function updateHeaderImage(id, headerPath) {
   const db = openDb();
   try {
     await db.run(
-      `UPDATE articles SET header_image_path = ?, updated_at = ? WHERE id = ?`,
-      [headerPath, nowNzSqlite(), id]
+      `UPDATE articles
+       SET header_image_path = ?,
+           header_image_status = ?,
+           updated_at = ?
+       WHERE id = ?`,
+      [headerPath, headerPath ? "ready" : "none", nowNzSqlite(), id]
     );
-    return await getArticleById(id);
+    const row = await getArticleById(id);
+    emitArticleUpdated(row);
+    return row;
+  } finally {
+    await db.close();
+  }
+}
+
+// Update the header image generation status for an article.
+// Logic: update status + updated_at -> fetch by id.
+export async function updateHeaderImageStatus(id, status) {
+  const db = openDb();
+  try {
+    await db.run(
+      `UPDATE articles
+       SET header_image_status = ?, updated_at = ?
+       WHERE id = ?`,
+      [status, nowNzSqlite(), id]
+    );
+    const row = await getArticleById(id);
+    emitArticleUpdated(row);
+    return row;
   } finally {
     await db.close();
   }
