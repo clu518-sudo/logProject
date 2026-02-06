@@ -10,6 +10,12 @@
   let error = "";
   let replyTo = null;
   let replyContent = "";
+  let research = null;
+  let researchError = "";
+  let researchLoading = false;
+  let researchStarting = false;
+  let researchEs = null;
+  let researchEsUrl = "";
 
   // Normalize image path for absolute URLs and local uploads.
   // Logic: empty -> "", absolute -> keep, else ensure leading slash.
@@ -39,6 +45,45 @@
     return roots;
   }
 
+  function parseSqliteDate(value) {
+    if (!value) return null;
+    const iso = value.includes("T") ? value : value.replace(" ", "T");
+    const parsed = new Date(iso);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  function isExpired(expiresAt) {
+    const date = parseSqliteDate(expiresAt);
+    return date ? date <= new Date() : false;
+  }
+
+  function parseSummary(md) {
+    if (!md) return [];
+    return md
+      .split("\n")
+      .map((line) => line.replace(/^\s*-\s*/, "").trim())
+      .filter(Boolean);
+  }
+
+  function formatSourceLabel(source) {
+    const url = source?.url || "";
+    if (!url) return source?.title || "Source";
+    try {
+      const parsed = new URL(url);
+      return source?.title || parsed.hostname;
+    } catch {
+      return source?.title || url;
+    }
+  }
+
+  function statusLabel(status) {
+    if (status === "queued") return "Queued…";
+    if (status === "running") return "Searching…";
+    if (status === "ready") return "Ready";
+    if (status === "failed") return "Failed";
+    return "Idle";
+  }
+
   // Load article and comments, then compute delete permissions.
   // Logic: fetch article -> fetch comments -> add canDelete -> build tree.
   async function load() {
@@ -53,6 +98,8 @@
         canDelete: current && (current.id === c.authorUserId || current.id === article.author.id || current.isAdmin)
       }));
       comments = buildTree(enhanced);
+      const researchData = await loadResearch();
+      await ensureResearch(researchData);
     } catch (e) {
       error = e.message;
     }
@@ -77,6 +124,90 @@
     await load();
   }
 
+  async function loadResearch() {
+    if (!id) return null;
+    researchLoading = true;
+    researchError = "";
+    try {
+      const data = await apiFetch(`/api/articles/${id}/research`);
+      research = data;
+      return data;
+    } catch (e) {
+      researchError = e.message;
+      return null;
+    } finally {
+      researchLoading = false;
+    }
+  }
+
+  async function startResearch({ force = false } = {}) {
+    if (!id) return null;
+    researchStarting = true;
+    researchError = "";
+    try {
+      const query = force ? "?force=true" : "";
+      const data = await apiFetch(`/api/articles/${id}/research${query}`, {
+        method: "POST",
+        body: JSON.stringify({ mode: "standard" })
+      });
+      research = data;
+      return data;
+    } catch (e) {
+      researchError = e.message;
+      return null;
+    } finally {
+      researchStarting = false;
+    }
+  }
+
+  async function ensureResearch(current) {
+    if (!current) return;
+    if (current.status === "none") {
+      await startResearch({ force: false });
+      return;
+    }
+    if (current.status === "ready" && isExpired(current.expiresAt)) {
+      await startResearch({ force: false });
+    }
+  }
+
+  function stopResearchRealtime() {
+    if (researchEs) {
+      researchEs.close();
+      researchEs = null;
+    }
+  }
+
+  function startResearchRealtime(url) {
+    stopResearchRealtime();
+    try {
+      researchEsUrl = url;
+      researchEs = new EventSource(url);
+      researchEs.addEventListener("research", (e) => {
+        try {
+          const payload = JSON.parse(e.data || "{}");
+          if (!payload?.articleId) return;
+          if (Number(payload.articleId) !== Number(id)) return;
+          research = {
+            ...(research || {}),
+            status: payload.status || research?.status,
+            updatedAt: payload.updatedAt || research?.updatedAt
+          };
+          if (payload.status === "ready" || payload.status === "failed") {
+            loadResearch();
+          }
+        } catch {
+          // ignore
+        }
+      });
+      researchEs.onerror = () => {
+        stopResearchRealtime();
+      };
+    } catch {
+      // ignore
+    }
+  }
+
   // Set the current comment being replied to.
   function openReply(comment) {
     replyTo = comment;
@@ -88,6 +219,7 @@
     document.body.classList.add("article-detail-body");
     load();
     return () => {
+      stopResearchRealtime();
       document.body.classList.remove("article-detail-body");
     };
   });
@@ -105,11 +237,23 @@
   $: headerPath = normalizePath(rawHeaderPath);
   $: cacheKey = article?.updatedAt || article?.createdAt || Date.now();
   $: coverUrl = headerPath ? `${headerPath}?ts=${encodeURIComponent(cacheKey)}` : "";
+  $: summaryItems = parseSummary(research?.summaryMd || "");
+  $: questions = research?.questions || [];
+  $: {
+    if (id) {
+      const wantMine = article && !article.isPublished && $me;
+      const nextUrl = wantMine ? "/api/articles/events?mine=true" : "/api/articles/events";
+      if (nextUrl !== researchEsUrl) {
+        startResearchRealtime(nextUrl);
+      }
+    }
+  }
 </script>
 
 <div class="article-detail">
   <div class="responsive-wrapper">
-    <div class="main">
+    <div class="layout">
+      <div class="main">
       {#if error}
         <div class="widget">
           <h2>Couldn’t load article</h2>
@@ -180,6 +324,71 @@
           </div>
         </section>
       {/if}
+      </div>
+      <aside class="sidebar">
+        <section class="widget widget--research">
+          <div class="research-header">
+            <h2>Related info</h2>
+            <button class="btn secondary" on:click={() => startResearch({ force: true })} disabled={researchStarting}>
+              Find latest info
+            </button>
+          </div>
+          <p class="muted status-line">{statusLabel(research?.status)}</p>
+
+          {#if researchError}
+            <p class="muted">{researchError}</p>
+          {/if}
+
+          {#if summaryItems.length}
+            <div>
+              <h3 class="research-subtitle">Summary</h3>
+              <ul class="research-list">
+                {#each summaryItems as item}
+                  <li>{item}</li>
+                {/each}
+              </ul>
+            </div>
+          {:else if research?.status === "ready"}
+            <p class="muted">No summary available.</p>
+          {:else if researchLoading}
+            <p class="muted">Loading research…</p>
+          {/if}
+
+          {#if (research?.sources || []).length}
+            <div>
+              <h3 class="research-subtitle">Sources</h3>
+              <ul class="research-sources">
+                {#each research.sources as source}
+                  <li>
+                    <a href={source.url} target="_blank" rel="noopener noreferrer">{formatSourceLabel(source)}</a>
+                    {#if source.publisher}
+                      <span class="muted"> · {source.publisher}</span>
+                    {/if}
+                    {#if source.publishedAt}
+                      <span class="muted"> · {source.publishedAt}</span>
+                    {/if}
+                  </li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+
+          {#if questions.length}
+            <div>
+              <h3 class="research-subtitle">Questions to verify</h3>
+              <ul class="research-list">
+                {#each questions as q}
+                  <li>{q}</li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
+
+          {#if research?.updatedAt}
+            <p class="muted">Last updated {new Date(research.updatedAt).toLocaleString()}</p>
+          {/if}
+        </section>
+      </aside>
     </div>
   </div>
 </div>
@@ -206,9 +415,21 @@
     padding-right: 2vw;
   }
 
-  .main {
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 2rem;
     margin-top: 3rem;
     margin-bottom: 2rem;
+    align-items: start;
+  }
+
+  .main {
+    min-width: 0;
+  }
+
+  .sidebar {
+    position: relative;
   }
 
   .widget {
@@ -230,6 +451,11 @@
 
   .widget--comments {
     max-width: 96vw;
+  }
+
+  .widget--research {
+    position: sticky;
+    top: 2rem;
   }
 
   .widget > * + * {
@@ -288,6 +514,29 @@
     align-items: center;
   }
 
+  .research-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .research-subtitle {
+    font-size: 1.05rem;
+    margin: 0 0 0.6rem;
+  }
+
+  .research-list,
+  .research-sources {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .status-line {
+    margin-top: 0.25rem;
+  }
+
   .comments-list {
     margin-top: 12px;
   }
@@ -321,6 +570,10 @@
   }
 
   @media (max-width: 640px) {
+    .layout {
+      grid-template-columns: 1fr;
+    }
+
     .widget {
       padding: 1.5rem;
       font-size: 1.05rem;

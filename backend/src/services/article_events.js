@@ -15,3 +15,14 @@ export function emitArticleUpdated(articleRow) {
   });
 }
 
+export function emitResearchUpdated(researchRow, articleRow) {
+  if (!researchRow) return;
+  articleEvents.emit("research.updated", {
+    articleId: researchRow.article_id,
+    status: researchRow.status,
+    updatedAt: researchRow.updated_at,
+    isPublished: articleRow ? !!articleRow.is_published : null,
+    authorUserId: articleRow?.author_user_id ?? null,
+  });
+}
+

@@ -14,6 +14,9 @@ import {
 import { createImage } from "../services/images.js";
 import { startAiHeaderImageGeneration } from "../services/article_header_image_ai.js";
 import { articleEvents } from "../services/article_events.js";
+import { getArticleResearch } from "../services/article_research.js";
+import { startArticleResearch } from "../services/article_research_agent.js";
+import { checkResearchRateLimit } from "../services/research_rate_limit.js";
 
 // Create a router for article-related endpoints.
 const router = express.Router();
@@ -80,6 +83,10 @@ router.get("/articles/events", async (req, res, next) => {
       res.write(`event: article\n`);
       res.write(`data: ${JSON.stringify(payload)}\n\n`);
     };
+    const sendResearch = (payload) => {
+      res.write(`event: research\n`);
+      res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    };
 
     const onUpdated = (ev) => {
       if (!ev) return;
@@ -93,11 +100,131 @@ router.get("/articles/events", async (req, res, next) => {
       return send(ev);
     };
 
+    const onResearchUpdated = (ev) => {
+      if (!ev) return;
+      if (mine) {
+        if (req.user?.is_admin) return sendResearch(ev);
+        if (ev.authorUserId !== req.user?.id) return;
+        return sendResearch(ev);
+      }
+      if (!ev.isPublished) return;
+      return sendResearch(ev);
+    };
+
     articleEvents.on("article.updated", onUpdated);
+    articleEvents.on("research.updated", onResearchUpdated);
 
     req.on("close", () => {
       articleEvents.off("article.updated", onUpdated);
+      articleEvents.off("research.updated", onResearchUpdated);
     });
+  } catch (e) {
+    return next(e);
+  }
+});
+
+function mapResearchRow(row, articleId) {
+  if (!row) {
+    return {
+      articleId,
+      status: "none",
+      summaryMd: "",
+      sources: [],
+      questions: [],
+      updatedAt: null,
+      expiresAt: null,
+    };
+  }
+  let sources = [];
+  let questions = [];
+  try {
+    sources = JSON.parse(row.sources_json || "[]");
+  } catch {
+    sources = [];
+  }
+  try {
+    questions = JSON.parse(row.questions_json || "[]");
+  } catch {
+    questions = [];
+  }
+  return {
+    articleId: row.article_id ?? articleId,
+    status: row.status || "none",
+    summaryMd: row.summary_md || "",
+    sources,
+    questions,
+    updatedAt: row.updated_at,
+    expiresAt: row.expires_at,
+    errorMessage: row.error_message || null,
+  };
+}
+
+function parseSqliteDate(value) {
+  if (!value) return null;
+  const iso = value.includes("T") ? value : value.replace(" ", "T");
+  const parsed = new Date(iso);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+// Get current research status/result.
+// Logic: validate article access -> fetch cached row -> return normalized result.
+router.get("/articles/:id/research", async (req, res, next) => {
+  try {
+    const article = await getArticleById(req.params.id);
+    if (!article) return res.sendStatus(404);
+    if (!article.is_published) {
+      if (
+        !req.user ||
+        (req.user.id !== article.author_user_id && !req.user.is_admin)
+      ) {
+        return res.status(403).json({
+          error: { code: "forbidden", message: "Draft not accessible" },
+        });
+      }
+    }
+    const row = await getArticleResearch(article.id);
+    return res.json(mapResearchRow(row, article.id));
+  } catch (e) {
+    return next(e);
+  }
+});
+
+// Start or refresh research job for an article.
+// Logic: validate access -> rate limit -> start background job -> return status payload.
+router.post("/articles/:id/research", async (req, res, next) => {
+  try {
+    const article = await getArticleById(req.params.id);
+    if (!article) return res.sendStatus(404);
+    if (!article.is_published) {
+      if (
+        !req.user ||
+        (req.user.id !== article.author_user_id && !req.user.is_admin)
+      ) {
+        return res.status(403).json({
+          error: { code: "forbidden", message: "Draft not accessible" },
+        });
+      }
+    }
+
+    const force = req.query.force === "true";
+    const existing = await getArticleResearch(article.id);
+    const expiresAt = parseSqliteDate(existing?.expires_at);
+    if (!force && existing?.status === "ready" && expiresAt && expiresAt > new Date()) {
+      return res.json(mapResearchRow(existing, article.id));
+    }
+
+    const key = req.user?.id ? `user:${req.user.id}` : `ip:${req.ip}`;
+    const limit = checkResearchRateLimit(key);
+    if (!limit.ok) {
+      res.setHeader("Retry-After", Math.ceil(limit.retryAfterMs / 1000));
+      return res.status(429).json({
+        error: { code: "rate_limited", message: "Too many research requests" },
+      });
+    }
+
+    const mode = req.body?.mode;
+    const row = await startArticleResearch(article.id, { mode });
+    return res.json(mapResearchRow(row, article.id));
   } catch (e) {
     return next(e);
   }

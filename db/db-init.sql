@@ -7,6 +7,7 @@ PRAGMA foreign_keys = ON;
 DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS images;
 DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS article_research;
 DROP TABLE IF EXISTS articles;
 DROP TABLE IF EXISTS users;
 
@@ -36,6 +37,20 @@ CREATE TABLE articles (
   created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
   FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE article_research (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  article_id INTEGER NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'none' CHECK (status IN ('none','queued','running','ready','failed')),
+  summary_md TEXT NOT NULL DEFAULT '',
+  sources_json TEXT NOT NULL DEFAULT '[]',
+  questions_json TEXT NOT NULL DEFAULT '[]',
+  error_message TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+  expires_at TEXT,
+  FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
 );
 
 CREATE TABLE comments (
@@ -72,6 +87,7 @@ CREATE TABLE sessions (
 
 CREATE INDEX idx_articles_author ON articles(author_user_id);
 CREATE INDEX idx_articles_created ON articles(created_at);
+CREATE INDEX idx_article_research_article ON article_research(article_id);
 CREATE INDEX idx_comments_article ON comments(article_id);
 CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
 CREATE INDEX idx_sessions_user ON sessions(user_id);

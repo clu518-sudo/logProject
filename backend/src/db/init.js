@@ -11,6 +11,7 @@ export async function initDbIfNeeded() {
   if (!exists) {
     await initDbForce();
   }
+  await ensureArticleResearchTable();
   await ensureArticleHeaderImageStatusColumn();
   await ensureHashedPasswords();
 }
@@ -72,6 +73,55 @@ async function ensureArticleHeaderImageStatusColumn() {
          AND header_image_path <> ''
          AND (header_image_status IS NULL OR header_image_status = 'none')`
     );
+  } finally {
+    await db.close();
+  }
+}
+
+// Ensure the article_research table exists and has expected columns.
+// Logic: CREATE TABLE IF NOT EXISTS -> PRAGMA -> ALTER TABLE for missing columns.
+async function ensureArticleResearchTable() {
+  const db = openDb();
+  try {
+    await db.run(`CREATE TABLE IF NOT EXISTS article_research (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      article_id INTEGER NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'none' CHECK (status IN ('none','queued','running','ready','failed')),
+      summary_md TEXT NOT NULL DEFAULT '',
+      sources_json TEXT NOT NULL DEFAULT '[]',
+      questions_json TEXT NOT NULL DEFAULT '[]',
+      error_message TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+      expires_at TEXT,
+      FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    )`);
+    await db.run(
+      "CREATE INDEX IF NOT EXISTS idx_article_research_article ON article_research(article_id)"
+    );
+    const cols = await db.all("PRAGMA table_info(article_research)");
+    const colNames = new Set((cols || []).map((c) => c?.name));
+    if (!colNames.has("summary_md")) {
+      await db.run(
+        "ALTER TABLE article_research ADD COLUMN summary_md TEXT NOT NULL DEFAULT ''"
+      );
+    }
+    if (!colNames.has("sources_json")) {
+      await db.run(
+        "ALTER TABLE article_research ADD COLUMN sources_json TEXT NOT NULL DEFAULT '[]'"
+      );
+    }
+    if (!colNames.has("questions_json")) {
+      await db.run(
+        "ALTER TABLE article_research ADD COLUMN questions_json TEXT NOT NULL DEFAULT '[]'"
+      );
+    }
+    if (!colNames.has("error_message")) {
+      await db.run("ALTER TABLE article_research ADD COLUMN error_message TEXT");
+    }
+    if (!colNames.has("expires_at")) {
+      await db.run("ALTER TABLE article_research ADD COLUMN expires_at TEXT");
+    }
   } finally {
     await db.close();
   }
