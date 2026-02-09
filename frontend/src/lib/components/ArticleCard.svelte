@@ -1,38 +1,33 @@
 <script>
   export let article;
 
-  // Normalize header image path for both absolute URLs and local uploads.
-  // Logic: empty -> "", absolute -> keep, else ensure leading slash.
-  function normalizePath(p) {
-    if (!p) return "";
-    // allow absolute URLs
-    if (/^https?:\/\//i.test(p)) return p;
-    // ensure leading slash for local uploads
-    return p.startsWith("/") ? p : `/${p}`;
-  }
 
   // Reactive values derived from the current article.
-  $: rawHeaderPath = article?.headerImagePath || article?.header_image_path || "";
-  $: headerPath = normalizePath(rawHeaderPath);
+  $: headerPath = article?.headerImagePath || article?.header_image_path || "";
   $: headerStatus =
     article?.headerImageStatus || article?.header_image_status || "none";
-  // Cache-busting query param to refresh image when article updates.
+  /* Cache-busting query param to refresh image when article updates.
+   * the browsers will cache the loaded images, so when the url not change 
+   * browsers are not going to fetch images, here add a parameter(name not import) 
+   * to tag if the image is changed, then the browser can fetch accordingly. 
+  */
   $: cacheKey = article?.updatedAt || article?.createdAt || Date.now();
   $: coverUrl = headerPath ? `${headerPath}?ts=${encodeURIComponent(cacheKey)}` : "";
   $: authorAvatarUrl = article ? `/api/users/${article.author.id}/avatar` : "";
 </script>
 
 <article class="card">
-  <div class="cover-bg" aria-hidden="true" style={coverUrl ? `--card-cover: url("${coverUrl}")` : ""}></div>
+  <!-- the "--card-cover" is a css varaible used to change card cover image accordingly here -->
+  <div class="cover-bg" style={coverUrl ? `--card-cover: url("${coverUrl}")` : ""}></div>
 
   <div class="text">
     <h2>{article.title}</h2>
     <div class="meta-row">
       <img src={authorAvatarUrl} alt="{article.author.username}'s avatar" class="author-avatar" />
-      <p class="meta">by {article.author.username} · {new Date(article.createdAt).toLocaleString()}</p>
+      <p class="meta">by {article.author.username} · {new Date(article?.updatedAt || article?.createdAt).toLocaleString()}</p>
     </div>
     {#if headerStatus === "generating"}
-      <p class="badge badge-ai">AI generate...</p>
+      <p class="badge badge-ai">AI image generating...</p>
     {/if}
     {#if !article.isPublished}
       <p class="badge">Draft</p>

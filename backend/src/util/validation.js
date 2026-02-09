@@ -1,3 +1,5 @@
+import * as yup from "yup";
+
 /**
  * Normalize username input.
  *
@@ -20,8 +22,13 @@ export function normalizeUsername(u) {
  * - 3–20 characters, only letters/numbers/underscore.
  */
 export function isValidUsername(u) {
+  const schema = yup
+    .string()
+    .required()
+    .matches(/^[a-zA-Z0-9_]{3,20}$/);
+
   // Simple, teachable rule: 3-20 chars, letters/numbers/underscore
-  return /^[a-zA-Z0-9_]{3,20}$/.test(u);
+  return schema.isValidSync(u);
 }
 
 /**
@@ -35,8 +42,15 @@ export function isValidUsername(u) {
  * - 8–72 characters (bcrypt-safe maximum is 72 bytes).
  */
 export function isValidPassword(p) {
+  const schema = yup
+    .string()
+    .strict(true)
+    .min(8)
+    .max(72)
+    .required();
+
   // Basic minimum; keep it simple for grading
-  return typeof p === "string" && p.length >= 8 && p.length <= 72;
+  return schema.isValidSync(p);
 }
 
 /**
@@ -47,7 +61,15 @@ export function isValidPassword(p) {
  * **Side effects**: none
  */
 export function isNonEmptyString(s, max = 5000) {
-  return typeof s === "string" && s.trim().length > 0 && s.length <= max;
+  const schema = yup
+    .string()
+    .strict(true)
+    .test("non-empty", "must be non-empty", (value) => {
+      if (typeof value !== "string") return false;
+      return value.trim().length > 0 && value.length <= max;
+    });
+
+  return schema.isValidSync(s);
 }
 
 /**
@@ -76,7 +98,8 @@ export function normalizeDob(dob) {
   const d = (dob ?? "").trim();
   if (!d) return null;
   // Expect YYYY-MM-DD, store as text
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
+  const schema = yup.string().required().matches(/^\d{4}-\d{2}-\d{2}$/);
+  if (!schema.isValidSync(d)) return null;
   return d;
 }
 

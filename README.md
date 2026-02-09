@@ -36,7 +36,7 @@ All demo accounts use the same password:
 
 ### 1) Database
 
-The backend auto-initializes the SQLite DB from `db/db-init.sql` on first run.
+The backend auto-initializes the SQLite DB from `backend/src/sql/db-init.sql` on first run.
 
 If you want to force re-init:
 

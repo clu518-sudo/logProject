@@ -3,6 +3,29 @@ import path from "node:path";
 import bcrypt from "bcrypt";
 import { openDb, getDbPath } from "./db.js";
 
+function findProjectRoot(startDir = process.cwd()) {
+  let dir = startDir;
+  while (true) {
+    // If we're at repo root, backend/package.json should exist.
+    if (fs.existsSync(path.join(dir, "backend", "package.json"))) return dir;
+
+    // If we're inside backend/, treat its parent as repo root.
+    if (
+      path.basename(dir).toLowerCase() === "backend" &&
+      fs.existsSync(path.join(dir, "package.json"))
+    ) {
+      return path.dirname(dir);
+    }
+
+    // Fallback marker: if .git exists here, assume it's the repo root.
+    if (fs.existsSync(path.join(dir, ".git"))) return dir;
+
+    const parent = path.dirname(dir);
+    if (parent === dir) return startDir; // reached filesystem root
+    dir = parent;
+  }
+}
+
 // Initialize the database if it does not exist yet.
 // Logic: check db file -> create if missing -> ensure passwords are hashed.
 export async function initDbIfNeeded() {
@@ -19,7 +42,14 @@ export async function initDbIfNeeded() {
 // Force-create database schema from SQL file.
 // Logic: load db-init.sql -> execute statements -> close connection.
 export async function initDbForce() {
-  const sqlPath = path.resolve(process.cwd(), "..", "db", "db-init.sql");
+  const projectRoot = findProjectRoot();
+  const sqlPath = path.resolve(
+    projectRoot,
+    "backend",
+    "src",
+    "sql",
+    "db-init.sql",
+  );
   if (!fs.existsSync(sqlPath)) {
     throw new Error(`db-init.sql not found at ${sqlPath}`);
   }
@@ -38,7 +68,7 @@ async function ensureHashedPasswords() {
   const db = openDb();
   try {
     const users = await db.all(
-      "SELECT id, password_hash FROM users WHERE password_hash LIKE 'PLAINTEXT:%'"
+      "SELECT id, password_hash FROM users WHERE password_hash LIKE 'PLAINTEXT:%'",
     );
     for (const user of users) {
       const raw = user.password_hash.replace("PLAINTEXT:", "");
@@ -62,7 +92,7 @@ async function ensureArticleHeaderImageStatusColumn() {
     const has = cols?.some((c) => c?.name === "header_image_status");
     if (!has) {
       await db.run(
-        "ALTER TABLE articles ADD COLUMN header_image_status TEXT NOT NULL DEFAULT 'none'"
+        "ALTER TABLE articles ADD COLUMN header_image_status TEXT NOT NULL DEFAULT 'none'",
       );
     }
     // Backfill: if an article already has a header image path, mark it ready.
@@ -71,7 +101,7 @@ async function ensureArticleHeaderImageStatusColumn() {
        SET header_image_status = 'ready'
        WHERE header_image_path IS NOT NULL
          AND header_image_path <> ''
-         AND (header_image_status IS NULL OR header_image_status = 'none')`
+         AND (header_image_status IS NULL OR header_image_status = 'none')`,
     );
   } finally {
     await db.close();
@@ -97,27 +127,29 @@ async function ensureArticleResearchTable() {
       FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
     )`);
     await db.run(
-      "CREATE INDEX IF NOT EXISTS idx_article_research_article ON article_research(article_id)"
+      "CREATE INDEX IF NOT EXISTS idx_article_research_article ON article_research(article_id)",
     );
     const cols = await db.all("PRAGMA table_info(article_research)");
     const colNames = new Set((cols || []).map((c) => c?.name));
     if (!colNames.has("summary_md")) {
       await db.run(
-        "ALTER TABLE article_research ADD COLUMN summary_md TEXT NOT NULL DEFAULT ''"
+        "ALTER TABLE article_research ADD COLUMN summary_md TEXT NOT NULL DEFAULT ''",
       );
     }
     if (!colNames.has("sources_json")) {
       await db.run(
-        "ALTER TABLE article_research ADD COLUMN sources_json TEXT NOT NULL DEFAULT '[]'"
+        "ALTER TABLE article_research ADD COLUMN sources_json TEXT NOT NULL DEFAULT '[]'",
       );
     }
     if (!colNames.has("questions_json")) {
       await db.run(
-        "ALTER TABLE article_research ADD COLUMN questions_json TEXT NOT NULL DEFAULT '[]'"
+        "ALTER TABLE article_research ADD COLUMN questions_json TEXT NOT NULL DEFAULT '[]'",
       );
     }
     if (!colNames.has("error_message")) {
-      await db.run("ALTER TABLE article_research ADD COLUMN error_message TEXT");
+      await db.run(
+        "ALTER TABLE article_research ADD COLUMN error_message TEXT",
+      );
     }
     if (!colNames.has("expires_at")) {
       await db.run("ALTER TABLE article_research ADD COLUMN expires_at TEXT");

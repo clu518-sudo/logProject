@@ -17,16 +17,6 @@
   let researchEs = null;
   let researchEsUrl = "";
 
-  // Normalize image path for absolute URLs and local uploads.
-  // Logic: empty -> "", absolute -> keep, else ensure leading slash.
-  function normalizePath(p) {
-    if (!p) return "";
-    // allow absolute URLs
-    if (/^https?:\/\//i.test(p)) return p;
-    // ensure leading slash for local uploads
-    return p.startsWith("/") ? p : `/${p}`;
-  }
-
   // Build a nested comment tree from a flat list.
   // Logic: map by id -> attach children -> return top-level roots.
   function buildTree(list) {
@@ -234,7 +224,7 @@
   // Reactive derived values for avatars and header image URL.
   $: authorAvatarUrl = article ? `/api/users/${article.author.id}/avatar` : "";
   $: rawHeaderPath = article?.headerImagePath || article?.header_image_path || "";
-  $: headerPath = normalizePath(rawHeaderPath);
+  $: headerPath = rawHeaderPath;
   $: cacheKey = article?.updatedAt || article?.createdAt || Date.now();
   $: coverUrl = headerPath ? `${headerPath}?ts=${encodeURIComponent(cacheKey)}` : "";
   $: summaryItems = parseSummary(research?.summaryMd || "");

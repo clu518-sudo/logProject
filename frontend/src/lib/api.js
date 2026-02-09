@@ -24,7 +24,7 @@ export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-    ...options
+    ...options,
   });
   if (res.status === 204) return null;
   let data = null;
@@ -58,7 +58,11 @@ export async function apiFetch(path, options = {}) {
 export async function uploadFile(path, file) {
   const form = new FormData();
   form.append("image", file);
-  const res = await fetch(path, { method: "POST", body: form, credentials: "include" });
+  const res = await fetch(path, {
+    method: "POST",
+    body: form,
+    credentials: "include",
+  });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     const msg = data?.error?.message || "Upload failed";
@@ -77,7 +81,11 @@ export async function uploadFile(path, file) {
 export async function uploadAvatar(file) {
   const form = new FormData();
   form.append("avatar", file);
-  const res = await fetch("/api/users/me/avatar", { method: "POST", body: form, credentials: "include" });
+  const res = await fetch("/api/users/me/avatar", {
+    method: "POST",
+    body: form,
+    credentials: "include",
+  });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     const msg = data?.error?.message || "Upload failed";
@@ -85,4 +93,3 @@ export async function uploadAvatar(file) {
   }
   return res.json();
 }
-
