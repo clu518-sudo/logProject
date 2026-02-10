@@ -30,6 +30,8 @@
   let timer;
   // Debounced username availability check.
   // Logic: clear previous timer -> wait 300ms -> call API -> set availability.
+  // The old calling will cancel, if new calling come in within 300ms, make sure when user typeing this function is not be called.
+  // encodeURIComponent() encode the important string in the URL. 
   function checkAvailability() {
     clearTimeout(timer);
     timer = setTimeout(async () => {

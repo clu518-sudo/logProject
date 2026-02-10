@@ -199,14 +199,14 @@ Admin-only (explicit requirement):
 - Keep the Swing app as **plain Java source** (no Maven/Gradle).
 - Use standard library only: `javax.swing`, `java.net.HttpURLConnection`, `java.io`, `java.util`.
 - Swing file layout (matches the project structure):
-  - `swing-admin/AdminApp.java` (main JFrame + integration)
-  - `swing-admin/LoginDialog.java` (login/logout UI)
-  - `swing-admin/HTTPClient.java` (HTTP helper + cookie session)
-  - `swing-admin/UserTableModel.java` (MVC model for JTable)
-  - `swing-admin/UserTablePanel.java` (JTable panel + selection)
-  - `swing-admin/AvatarPanel.java` (async avatar loading via SwingWorker)
+  - `java-client/AdminApp.java` (main JFrame + integration)
+  - `java-client/LoginDialog.java` (login/logout UI)
+  - `java-client/HTTPClient.java` (HTTP helper + cookie session)
+  - `java-client/UserTableModel.java` (MVC model for JTable)
+  - `java-client/UserTablePanel.java` (JTable panel + selection)
+  - `java-client/AvatarPanel.java` (async avatar loading via SwingWorker)
 - Compile/run (Windows):
-  - `cd swing-admin`
+  - `cd java-client`
   - `javac *.java`
   - `java AdminApp`
 

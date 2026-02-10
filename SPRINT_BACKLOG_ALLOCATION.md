@@ -155,8 +155,8 @@ This ensures:
 - `backend/src/util/validation.js` - Validation utilities
 
 #### Java (Swing)
-- `swing-admin/LoginDialog.java` - Login/logout dialog component
-- `swing-admin/HTTPClient.java` - HTTP client utility for API calls with cookie/session management
+- `java-client/LoginDialog.java` - Login/logout dialog component
+- `java-client/HTTPClient.java` - HTTP client utility for API calls with cookie/session management
 
 #### Database
 - Users table schema
@@ -189,8 +189,8 @@ This ensures:
 - Search & sort implementation
 
 #### Java (Swing)
-- `swing-admin/UserTableModel.java` - Custom TableModel implementing MVC pattern
-- `swing-admin/UserTablePanel.java` - JTable panel with user list display and selection handling
+- `java-client/UserTableModel.java` - Custom TableModel implementing MVC pattern
+- `java-client/UserTablePanel.java` - JTable panel with user list display and selection handling
 
 #### Database
 - Articles table schema
@@ -223,8 +223,8 @@ This ensures:
 - `backend/src/util/http.js` - HTTP utilities
 
 #### Java (Swing)
-- `swing-admin/AdminApp.java` - Main application frame, integrates all components
-- `swing-admin/AvatarPanel.java` - Avatar display panel with async image loading (SwingWorker)
+- `java-client/AdminApp.java` - Main application frame, integrates all components
+- `java-client/AvatarPanel.java` - Avatar display panel with async image loading (SwingWorker)
 - Delete user functionality and table refresh
 - MVC patterns documentation (observers, listeners)
 

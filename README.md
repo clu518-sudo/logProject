@@ -19,7 +19,7 @@ Team: **Team Placeholder**
 /
   backend/
   frontend/
-  swing-admin/
+  java-client/
   db/
 ```
 
@@ -66,12 +66,12 @@ npm run dev
 
 Runs on `http://localhost:5173` (Vite proxy to backend `/api` + `/uploads`).
 
-### 4) Swing Admin (Java)
+### 4) Java Client (Swing Admin)
 
 ```
-cd swing-admin
+cd java-client
 mvn -q -e -DskipTests package
-java -jar target/swing-admin-1.0.0.jar
+java -jar target/java-client-1.0.0.jar
 ```
 
 Log in using the **admin** account above.

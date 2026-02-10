@@ -60,7 +60,7 @@ Use this structure unless the workspace already has an established one:
   frontend/
     package.json
     src/
-  swing-admin/
+  java-client/
     (Maven or Gradle project)
   db/
     db-init.sql

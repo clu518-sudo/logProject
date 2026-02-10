@@ -69,10 +69,6 @@ desktop.ini
 target/
 *.iml
 
-# Swing admin (Java) build output
-swing-admin/bin/
-swing-admin/out/
-
 # Temporary files
 tmp/
 temp/
