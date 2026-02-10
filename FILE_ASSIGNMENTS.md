@@ -43,20 +43,18 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 
 **Backend Total**: 2 files
 
-### **Java Files** (Swing)
+### **Java Files** (Swing – package `pccit.finalproject.javaclient`)
 
-- `java-client/LoginDialog.java` - Login/logout dialog component
-  - Login form UI (username, password fields)
-  - Login/logout buttons and event handlers
-  - Session cookie management
-  - Authentication state display
-- `java-client/HTTPClient.java` - HTTP client utility
-  - GET/POST/DELETE request methods
-  - Cookie/session header management
-  - JSON request/response handling
-  - Error handling and status codes
+- `java-client/src/pccit/finalproject/javaclient/http/ApiHttpClient.java` - HTTP client utility
+  - GET/POST/DELETE and getBytes; CookieManager for session persistence
+  - Timeouts and `java.net.http.HttpClient` usage
+- `java-client/src/pccit/finalproject/javaclient/api/ApiClient.java` - Backend API client
+  - Login/logout, getUsers (admin), deleteUser, fetchAvatarAsync (callback-based)
+  - Uses ApiHttpClient and JsonHelper; Executor for async avatar fetch
+- `java-client/src/pccit/finalproject/javaclient/model/LoginResult.java` - Login result DTO (success, admin, errorMessage)
+- `java-client/src/pccit/finalproject/javaclient/util/JsonHelper.java` - Minimal JSON parsing (no external lib) for login response and user list
 
-**Java Total**: 2 files
+**Java Total**: 4 files
 
 ### **Database Schema**
 
@@ -68,7 +66,7 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 
 - `README.md` - Auth setup section
 
-**Module Total**: ~13 source files (8 frontend + 2 backend + 2 Java + 1 docs) + database tables
+**Module Total**: ~15 source files (8 frontend + 2 backend + 4 Java + 1 docs) + database tables
 
 **Estimated Effort**: 36-50 hours
 
@@ -137,20 +135,13 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 **Backend Total**: 7 files  
 *(db.js and uploads.js assigned to Yanzhi Huang for balance.)*
 
-### **Java Files** (Swing)
+### **Java Files** (Swing – package `pccit.finalproject.javaclient`)
 
-- `java-client/UserTableModel.java` - Custom TableModel (MVC pattern)
-  - Implements AbstractTableModel
-  - Manages user data list
-  - Column definitions (username, articles, comments, created)
-  - Observers/listeners for data updates
-  - Add/remove/update user rows
-- `java-client/UserTablePanel.java` - User table display panel
-  - JTable component with custom model
-  - Column sizing and formatting
-  - Row selection handling (ListSelectionListener)
-  - Scroll pane integration
-  - Selection event firing to parent
+- `java-client/src/pccit/finalproject/javaclient/model/User.java` - User DTO (id, username, realName, dob, bio, avatar fields, admin, articleCount)
+- `java-client/src/pccit/finalproject/javaclient/ui/UserTableModel.java` - Custom TableModel (MVC)
+  - Extends AbstractTableModel; backed by list of User
+  - Columns: ID, Username, Real Name, Admin, Articles
+  - setUsers, removeUserAt, getUserAt, clear; fireTableDataChanged
 
 **Java Total**: 2 files
 
@@ -240,26 +231,19 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 
 **Backend Total**: 14 files
 
-### **Java Files** (Swing)
+### **Java Files** (Swing – package `pccit.finalproject.javaclient`)
 
-- `java-client/AdminApp.java` - Main application frame (integrates all components)
-  - JFrame main window setup (BorderLayout)
-  - Top panel with LoginDialog integration
-  - Center panel with UserTablePanel integration
-  - Right panel with AvatarPanel integration
-  - Delete user button (admin operations)
-  - Button enable/disable logic based on login/selection state
-  - Menu bar (if needed)
-  - Main method and application entry point
-- `java-client/AvatarPanel.java` - Avatar display panel
-  - JPanel for avatar image display
-  - SwingWorker for async image loading (no UI freeze)
-  - Image fetching from API
-  - Image scaling and display
-  - Loading indicator
-  - Error handling for missing avatars
+- `java-client/src/pccit/finalproject/javaclient/Main.java` - Entry point; launches AdminFrame on EDT
+- `java-client/src/pccit/finalproject/javaclient/ui/AdminFrame.java` - Main JFrame (integrates all UI)
+  - North: login fields (username, password), Login/Logout buttons
+  - Center: JTable with UserTableModel, Delete user button; East: AvatarPanel
+  - Login/logout/delete via ApiClient; SwingWorker for login and user list load
+  - Button enable/disable by login and selection state (requirement 11)
+- `java-client/src/pccit/finalproject/javaclient/ui/AvatarPanel.java` - Selected user panel
+  - JPanel: username label + avatar thumbnail (async via ApiClient.fetchAvatarAsync)
+  - clearSelection, setSelectedUsername, setAvatarImage, setAvatarError
 
-**Java Total**: 2 files
+**Java Total**: 3 files
 
 ### **Database Schema**
 
@@ -279,116 +263,83 @@ Based on feature-based module allocation in `SPRINT_BACKLOG_ALLOCATION.md`.
 
 - `java-client/README.md` - Swing admin usage guide (if needed)
 
-**Module Total**: ~23 source files (5 frontend + 14 backend + 2 Java + 1 database + 1 config)
+**Module Total**: ~24 source files (5 frontend + 14 backend + 3 Java + 1 database + 1 config)
 
 **Estimated Effort**: 64-88 hours
 
 ---
 
-## **Java/Swing File Structure** (Modular Design)
+## **Java/Swing File Structure** (Package: `pccit.finalproject.javaclient`)
 
-The Swing admin application is split into **6 separate Java files** for clean separation of concerns:
+The Swing admin client uses a **package-based layout** under `java-client/src/pccit/finalproject/javaclient/` with **9 Java files**:
 
-### **Cendong Lu's Java Components** (Authentication)
+### **Cendong Lu's Java Components** (Auth, HTTP, API client)
 
-1. **LoginDialog.java**
-   - Purpose: User authentication UI
-   - Responsibilities:
-     - Login form with username/password fields
-     - Login and logout buttons
-     - Session cookie storage
-     - Authentication state management
-     - Success/error message display
-   - Integration: Called by AdminApp on startup
+1. **http/ApiHttpClient.java**
+   - Purpose: Low-level HTTP client with session cookie handling
+   - Responsibilities: GET, POST (JSON and no-body), DELETE, getBytes; CookieManager; timeouts via `java.net.http.HttpClient`
+   - Integration: Used by ApiClient for all backend calls
 
-2. **HTTPClient.java**
-   - Purpose: Reusable HTTP communication utility
-   - Responsibilities:
-     - GET/POST/DELETE request methods
-     - Cookie header management (session persistence)
-     - JSON serialization/deserialization
-     - Error handling and HTTP status codes
-     - Connection timeout configuration
-   - Integration: Used by all other components for API calls
+2. **api/ApiClient.java**
+   - Purpose: Backend API client (login, logout, getUsers, deleteUser, fetchAvatarAsync)
+   - Responsibilities: Login/logout with cookie storage; admin user list and delete; async avatar fetch with callback; uses JsonHelper for response parsing
+   - Integration: Used by AdminFrame for all API operations
 
-### **Nuona Liang's Java Components** (Data Model)
+3. **model/LoginResult.java**
+   - Purpose: Login result DTO (success, admin flag, errorMessage)
+   - Integration: Returned by ApiClient.login()
 
-3. **UserTableModel.java**
-   - Purpose: MVC TableModel for user data
-   - Responsibilities:
-     - Extends AbstractTableModel
-     - Manages list of user objects
-     - Defines columns: username, articles, comments, created date
-     - Provides getValueAt, getRowCount, getColumnCount
-     - Notifies listeners on data changes (fireTableDataChanged)
-     - Add/remove/update row methods
-   - Integration: Used by UserTablePanel
+4. **util/JsonHelper.java**
+   - Purpose: Minimal JSON parsing (no external library) for login response and user list
+   - Integration: Used by ApiClient
 
-4. **UserTablePanel.java**
-   - Purpose: User list display component
-   - Responsibilities:
-     - Creates JTable with UserTableModel
-     - Configures column widths and renderers
-     - Implements ListSelectionListener for row selection
-     - Provides getSelectedUser() method
-     - Wraps table in JScrollPane
-     - Fires selection events to parent
-   - Integration: Embedded in AdminApp center panel
+### **Nuona Liang's Java Components** (Data model & table)
 
-### **Yanzhi Huang's Java Components** (Main Application & Features)
+5. **model/User.java**
+   - Purpose: User DTO as returned by admin users API (id, username, realName, dob, bio, avatar fields, admin, articleCount)
+   - Integration: Used by UserTableModel and AdminFrame
 
-5. **AdminApp.java**
-   - Purpose: Main application frame and integration point
-   - Responsibilities:
-     - JFrame setup (title, size, layout)
-     - Integrates LoginDialog in top panel
-     - Embeds UserTablePanel in center
-     - Embeds AvatarPanel on right side
-     - Delete user button and functionality
-     - Refresh table after operations
-     - Enable/disable buttons based on state
-     - Application entry point (main method)
-   - Integration: Main class that ties everything together
+6. **ui/UserTableModel.java**
+   - Purpose: MVC TableModel for the user list
+   - Responsibilities: Extends AbstractTableModel; columns ID, Username, Real Name, Admin, Articles; setUsers, removeUserAt, getUserAt, clear; fireTableDataChanged
+   - Integration: Set as model for JTable in AdminFrame
 
-6. **AvatarPanel.java**
-   - Purpose: Async avatar image display
-   - Responsibilities:
-     - JPanel with JLabel for image
-     - SwingWorker for background image loading
-     - Fetches avatar from API using HTTPClient
-     - Scales image to fit panel
-     - Shows loading indicator during fetch
-     - Handles missing/error images gracefully
-     - No UI freezing (proper threading)
-   - Integration: Called by AdminApp when user is selected
+### **Yanzhi Huang's Java Components** (Main app & UI)
+
+7. **Main.java**
+   - Purpose: Application entry point
+   - Responsibilities: SwingUtilities.invokeLater; setLookAndFeel; create and show AdminFrame
+   - Integration: Run with `java -cp out pccit.finalproject.javaclient.Main`
+
+8. **ui/AdminFrame.java**
+   - Purpose: Main JFrame integrating login UI, user table, avatar panel, delete action
+   - Responsibilities: North—username/password fields, Login/Logout; Center—JTable (UserTableModel) + Delete user button; East—AvatarPanel; SwingWorker for login and user list; button state by login/selection
+   - Integration: Uses ApiClient, UserTableModel, AvatarPanel
+
+9. **ui/AvatarPanel.java**
+   - Purpose: Selected user panel (username + avatar thumbnail)
+   - Responsibilities: clearSelection, setSelectedUsername, setAvatarImage (from bytes), setAvatarError; async load via ApiClient.fetchAvatarAsync callback
+   - Integration: Embedded in AdminFrame east panel
 
 ### **Component Communication Flow**
 
 ```
-AdminApp (main frame)
-  ├─ Top: LoginDialog (Cendong Lu)
-  │    └─ Uses: HTTPClient (Cendong Lu)
-  │
-  ├─ Center: UserTablePanel (Nuona Liang)
-  │    ├─ Uses: UserTableModel (Nuona Liang)
-  │    └─ Data from: HTTPClient (Cendong Lu)
-  │
-  ├─ Right: AvatarPanel (Yanzhi Huang)
-  │    └─ Uses: HTTPClient (Cendong Lu)
-  │
-  └─ Bottom: Delete button (Yanzhi Huang)
-       └─ Uses: HTTPClient (Cendong Lu)
+Main (entry)
+  └─ AdminFrame (Yanzhi Huang)
+       ├─ North: login fields + Login/Logout → ApiClient (Cendong Lu)
+       │    └─ ApiHttpClient (Cendong Lu), JsonHelper (Cendong Lu), LoginResult (Cendong Lu)
+       ├─ Center: JTable(UserTableModel) (Nuona Liang) + Delete → ApiClient
+       │    └─ UserTableModel uses User (Nuona Liang)
+       └─ East: AvatarPanel (Yanzhi Huang) → ApiClient.fetchAvatarAsync
 ```
 
-### **Why Split Into Multiple Files?**
+### **Why This Structure?**
 
-1. **Clear ownership**: Each person owns 2 complete Java files
-2. **Separation of concerns**: Each file has a single, well-defined purpose
-3. **Reusability**: HTTPClient can be used by all components
-4. **Testability**: Each component can be tested independently
-5. **MVC pattern**: Clear separation of Model (UserTableModel), View (panels), Controller (AdminApp)
-6. **Professional practice**: Follows Java best practices (one public class per file)
-7. **Reduced conflicts**: Different people work on different files
+1. **Clear ownership**: Cendong (auth/HTTP/API + JSON), Nuona (user model + table model), Yanzhi (entry + frame + avatar UI)
+2. **Package layout**: api, http, model, ui, util follow Java conventions
+3. **Reusability**: ApiClient and ApiHttpClient used by the single frame; no duplicate HTTP code
+4. **MVC**: Model (User, UserTableModel), View (AdminFrame, AvatarPanel), API layer (ApiClient)
+5. **Async**: Login, user list, and avatar load use background threads so the UI stays responsive
 
 ---
 
@@ -432,9 +383,9 @@ These files are touched by multiple people during initial setup:
 | Layout & global styles  | Yanzhi Huang | Cendong Lu, Nuona Liang   | All routes use Yanzhi Huang's +layout.svelte and app.css                    |
 | DB connection & uploads | Yanzhi Huang | Nuona Liang               | Article/image code may use Yanzhi Huang's db.js and uploads.js             |
 | API utilities           | Yanzhi Huang | Cendong Lu, Nuona Liang   | Cendong Lu & Nuona Liang import Yanzhi Huang's `api.js` helper              |
-| Swing HTTP utility      | Cendong Lu   | Nuona Liang, Yanzhi Huang | Nuona Liang & Yanzhi Huang use Cendong Lu's HTTPClient for API calls       |
-| Swing table integration | Nuona Liang  | Yanzhi Huang              | Yanzhi Huang's AdminApp uses Nuona Liang's UserTablePanel                  |
-| Swing login integration | Cendong Lu   | Yanzhi Huang              | Yanzhi Huang's AdminApp embeds Cendong Lu's LoginDialog                    |
+| Swing API/HTTP          | Cendong Lu   | Nuona Liang, Yanzhi Huang | ApiClient & ApiHttpClient (Cendong); AdminFrame uses ApiClient for all API calls |
+| Swing table integration | Nuona Liang  | Yanzhi Huang              | Yanzhi Huang's AdminFrame uses Nuona Liang's UserTableModel for the JTable |
+| Swing login UI          | Cendong Lu   | Yanzhi Huang              | Login logic in ApiClient (Cendong); login fields and flow in AdminFrame (Yanzhi) |
 
 ### **Development Order**
 
@@ -451,7 +402,7 @@ These files are touched by multiple people during initial setup:
 
 - **Frontend**: 8 Svelte files (auth pages, components, state, validation)
 - **Backend**: 2 Node.js files (users route, users service)
-- **Java**: 2 Swing files (LoginDialog, HTTPClient)
+- **Java**: 4 Swing files (ApiHttpClient, ApiClient, LoginResult, JsonHelper) in packages http, api, model, util
 - **Database**: 2 tables (users, sessions)
 - **AI research feature**: Online “Related info” research agent (see **AI Article Content Research** section above)
 
@@ -459,7 +410,7 @@ These files are touched by multiple people during initial setup:
 
 - **Frontend**: 8 Svelte files (article UI, editor, search)
 - **Backend**: 7 Node.js files (articles, images, AI header image generation, db init)
-- **Java**: 2 Swing files (UserTableModel, UserTablePanel)
+- **Java**: 2 Swing files (User, UserTableModel) in packages model, ui
 - **Database**: 3 tables + complete schema (articles, images, structure)
 - **Config**: Package management, build tools
 - **Docs**: Complete README
@@ -468,7 +419,7 @@ These files are touched by multiple people during initial setup:
 
 - **Frontend**: 5 Svelte files (comments, ArticleCard, layout, app.css, API utils)
 - **Backend**: 14 Node.js files (comments, admin, app setup, db connection, uploads, **auth route, sessions, auth middleware, validation**—auth API from Cendong for balance—AI header image generation)
-- **Java**: 2 Swing files (AdminApp main frame, AvatarPanel)
+- **Java**: 3 Swing files (Main, AdminFrame, AvatarPanel) in root package and ui
 - **Database**: 1 table + seed data (comments, demo data)
 
 **All three team members work across Svelte, Node.js/Express, and Java as required.**
@@ -497,9 +448,9 @@ These files are touched by multiple people during initial setup:
 
 ### **4. Fair & Balanced Workload**
 
-- Cendong Lu: 36-50 hours (13 files: 8 frontend + 2 backend + 2 Java + 1 docs; excludes AI research; auth API + sessions/middleware/validation moved to Yanzhi for balance)
+- Cendong Lu: 36-50 hours (~15 files: 8 frontend + 2 backend + 4 Java + 1 docs; excludes AI research; auth API + sessions/middleware/validation moved to Yanzhi for balance)
 - Nuona Liang: 48-72 hours (22 files: 8 frontend + 7 backend + 2 Java + 5 config/docs)
-- Yanzhi Huang: 64-88 hours (23 files: 5 frontend + 14 backend + 2 Java + 2 database/config; includes auth route, sessions, auth middleware, validation from Cendong)
+- Yanzhi Huang: 64-88 hours (~24 files: 5 frontend + 14 backend + 3 Java + 2 database/config; includes auth route, sessions, auth middleware, validation from Cendong)
 
 ### **5. Professional Practice**
 
@@ -527,7 +478,7 @@ These files are touched by multiple people during initial setup:
 
 - **Cendong Lu demonstrates**: "I can edit my profile, change avatar, see avatars everywhere. The UI is responsive."
 - **Nuona Liang demonstrates**: "I can create rich articles with images using WYSIWYG editor. I can search and sort articles."
-- **Yanzhi Huang demonstrates**: "Comments support nested replies to any depth. Swing admin panel manages users with avatar display."
+- **Yanzhi Huang demonstrates**: "Comments support nested replies to any depth. Swing admin client (Main → AdminFrame) manages users with avatar panel."
 
 Each person showcases their **complete, working feature module** end-to-end.
 
@@ -535,23 +486,25 @@ Each person showcases their **complete, working feature module** end-to-end.
 
 ## **Quick Reference: Java File Ownership**
 
-| File                  | Owner            | Purpose                              | Lines (est.) |
-| --------------------- | ---------------- | ------------------------------------ | ------------ |
-| `LoginDialog.java`    | **Cendong Lu**   | Login/logout UI + session management | 80-120       |
-| `HTTPClient.java`     | **Cendong Lu**   | HTTP utility for API calls           | 150-200      |
-| `UserTableModel.java` | **Nuona Liang**  | MVC TableModel for user data         | 80-120       |
-| `UserTablePanel.java` | **Nuona Liang**  | JTable display panel                 | 60-100       |
-| `AdminApp.java`       | **Yanzhi Huang** | Main frame + integration             | 150-200      |
-| `AvatarPanel.java`    | **Yanzhi Huang** | Async avatar loading panel           | 100-150      |
+| File (under `java-client/src/pccit/finalproject/javaclient/`) | Owner            | Purpose                              |
+| ------------------------------------------------------------- | ---------------- | ------------------------------------ |
+| `http/ApiHttpClient.java`                                     | **Cendong Lu**   | HTTP client + session cookies        |
+| `api/ApiClient.java`                                          | **Cendong Lu**   | Login, logout, users, delete, avatar |
+| `model/LoginResult.java`                                      | **Cendong Lu**   | Login result DTO                     |
+| `util/JsonHelper.java`                                        | **Cendong Lu**   | JSON parsing for API responses       |
+| `model/User.java`                                             | **Nuona Liang**  | User DTO                             |
+| `ui/UserTableModel.java`                                      | **Nuona Liang**  | MVC TableModel for user table        |
+| `Main.java`                                                   | **Yanzhi Huang** | Entry point                          |
+| `ui/AdminFrame.java`                                          | **Yanzhi Huang** | Main frame + login/table/avatar/delete |
+| `ui/AvatarPanel.java`                                         | **Yanzhi Huang** | Selected user + avatar thumbnail     |
 
-**Total**: 6 Java files, ~620-890 lines, evenly distributed (2 files per person)
+**Total**: 9 Java files (package-based). Build/run: `javac -d out -sourcepath src src/pccit/finalproject/javaclient/Main.java` then `java -cp out pccit.finalproject.javaclient.Main`.
 
-Each person creates **2 complete Java files** demonstrating:
+Demonstrates:
 
-- ✅ Object-oriented design
-- ✅ Swing GUI components
-- ✅ Event handling (listeners, observers)
-- ✅ MVC pattern
-- ✅ Async operations (SwingWorker)
-- ✅ HTTP networking
-- ✅ Professional code organization
+- ✅ Package layout (api, http, model, ui, util)
+- ✅ Swing GUI (JFrame, JTable, JPanel)
+- ✅ MVC (UserTableModel, User)
+- ✅ Async (SwingWorker, ApiClient.fetchAvatarAsync)
+- ✅ HTTP (java.net.http.HttpClient, CookieManager)
+- ✅ No external JSON library (JsonHelper)

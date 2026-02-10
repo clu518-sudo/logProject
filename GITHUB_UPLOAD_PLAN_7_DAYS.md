@@ -12,7 +12,7 @@ Based on `FILE_ASSIGNMENTS.md`. **Database**: All DB schema and migrations are u
 |-----|--------------|----------------|
 | **Day 1** | Project setup + **full database** | `.gitignore`, `db/db-init.sql` (or `backend/src/sql/db-init.sql`), `backend/src/db/init.js` (DB init/migrations). README.md auth + DB setup section. |
 | **Day 2** | Auth frontend + user profile backend only | `frontend/src/routes/register/+page.svelte`, `frontend/src/routes/login/+page.svelte`, `frontend/src/routes/profile/+page.svelte`, `frontend/src/lib/pages/Register.svelte`, `frontend/src/lib/pages/Login.svelte`, `frontend/src/lib/pages/Profile.svelte`, `frontend/src/lib/store.js`, `frontend/src/lib/validation.js`. `backend/src/routes/users.js`, `backend/src/services/users.js`. *(Auth route, sessions, middleware, validation pushed by Yanzhi – see Yanzhi Day 2.)* |
-| **Day 3** | Java (Swing) auth + HTTP | `java-client/LoginDialog.java`, `java-client/HTTPClient.java`. |
+| **Day 3** | Java (Swing) auth + HTTP + API client | `java-client/src/pccit/finalproject/javaclient/http/ApiHttpClient.java`, `java-client/src/pccit/finalproject/javaclient/api/ApiClient.java`, `java-client/src/pccit/finalproject/javaclient/model/LoginResult.java`, `java-client/src/pccit/finalproject/javaclient/util/JsonHelper.java`. |
 | **Day 4** | AI research – backend | `backend/src/routes/articles.js` (research endpoints + SSE), `backend/src/services/article_research_agent.js`, `backend/src/services/article_research.js`, `backend/src/services/research_tools.js`, `backend/src/services/research_rate_limit.js`, `backend/src/services/article_events.js`. DB: `article_research` table (in Cendong’s DB upload). |
 | **Day 5** | AI research – frontend | `frontend/src/lib/pages/ArticleDetail.svelte` (Related info panel + SSE for research). |
 | **Day 6** | (Buffer / integration) | Any auth or research fixes, README updates, integration tests. |
@@ -30,7 +30,7 @@ Based on `FILE_ASSIGNMENTS.md`. **Database**: All DB schema and migrations are u
 | **Day 2** | Editor + TinyMCE | `frontend/src/routes/editor/+page.svelte`, `frontend/src/routes/editor/[id]/+page.svelte`, `frontend/src/lib/pages/ArticleEditor.svelte`, `frontend/src/lib/components/TinyEditor.svelte`. `frontend/package.json`, `frontend/svelte.config.js`, `frontend/vite.config.js`. |
 | **Day 3** | Images + backend init | `backend/src/services/images.js`, `backend/src/db/init.js` (if not owned by Cendong for DB; otherwise only article/image logic). `backend/package.json`. |
 | **Day 4** | AI header image (shared) | `backend/src/services/article_header_image_ai.js`, `backend/src/services/image_generation.js`, `backend/src/services/text_generation.js`. |
-| **Day 5** | Java (Swing) – table | `java-client/UserTableModel.java`, `java-client/UserTablePanel.java`. |
+| **Day 5** | Java (Swing) – user model + table | `java-client/src/pccit/finalproject/javaclient/model/User.java`, `java-client/src/pccit/finalproject/javaclient/ui/UserTableModel.java`. |
 | **Day 6** | Config + README | `README.md` (setup, demo users, API, features, deployment). |
 | **Day 7** | (Final) | Polish, README tweaks, integration checks. |
 
@@ -47,7 +47,7 @@ Based on `FILE_ASSIGNMENTS.md`. **Database**: All DB schema and migrations are u
 | **Day 3** | ArticleCard + admin API | `frontend/src/lib/components/ArticleCard.svelte`, `backend/src/routes/admin.js`. |
 | **Day 4** | App setup + DB connection + uploads | `backend/src/app.js`, `backend/src/db/db.js`, `backend/src/util/uploads.js`, `backend/src/util/http.js`. |
 | **Day 5** | AI header image (shared) | Same shared files as Nuona: `backend/src/services/article_header_image_ai.js`, `backend/src/services/image_generation.js`, `backend/src/services/text_generation.js` (coordinate with Nuona – one person pushes, or split commits). |
-| **Day 6** | Java (Swing) – main app + avatar | `java-client/AdminApp.java`, `java-client/AvatarPanel.java`. `backend/.nvmrc`. `java-client/README.md`. |
+| **Day 6** | Java (Swing) – main app + avatar | `java-client/src/pccit/finalproject/javaclient/Main.java`, `java-client/src/pccit/finalproject/javaclient/ui/AdminFrame.java`, `java-client/src/pccit/finalproject/javaclient/ui/AvatarPanel.java`. `backend/.nvmrc`. `java-client/README.md`. |
 | **Day 7** | (Final) | Polish, layout/nav fixes, admin flow checks. |
 
 ---
@@ -58,10 +58,10 @@ Based on `FILE_ASSIGNMENTS.md`. **Database**: All DB schema and migrations are u
 |-----|------------|-------------|--------------|
 | **1** | DB + project setup, README auth | Article list/detail + backend CRUD | Layout, app.css, api.js |
 | **2** | Auth frontend + user profile backend (users route, user service) | Editor + TinyMCE + config | Comments + Auth API (auth route, sessions, middleware, validation) |
-| **3** | Swing: LoginDialog, HTTPClient | Images + backend init | ArticleCard + admin API |
+| **3** | Swing: ApiHttpClient, ApiClient, LoginResult, JsonHelper | Images + backend init | ArticleCard + admin API |
 | **4** | AI research backend + DB | AI header image backend | app.js, db.js, uploads, http |
-| **5** | AI research frontend (ArticleDetail) | Swing: UserTableModel, UserTablePanel | AI header image (shared) or Swing |
-| **6** | Buffer / integration | README full docs | Swing: AdminApp, AvatarPanel |
+| **5** | AI research frontend (ArticleDetail) | Swing: User, UserTableModel | AI header image (shared) or Swing |
+| **6** | Buffer / integration | README full docs | Swing: Main, AdminFrame, AvatarPanel |
 | **7** | Final DB + docs | Polish | Polish |
 
 - **Database**: Only **Cendong** pushes `db/db-init.sql`, `backend/src/sql/db-init.sql`, `backend/src/db/init.js`, and any migration/seed files.
